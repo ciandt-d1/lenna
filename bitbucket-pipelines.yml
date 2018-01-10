@@ -16,7 +16,7 @@ pipelines:
             - dist/**
       - step:
           name: Deploy
-          image: google/cloud-sdk:alpine
+          image: google/cloud-sdk
           script:
             # Authenticating with the service account key file
             - echo $GCLOUD_API_KEYFILE | base64 --decode --ignore-garbage > ./gcloud-api-key.json

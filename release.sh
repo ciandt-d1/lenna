@@ -19,6 +19,6 @@ sed_param="s/\${VERSION}/${SEMVER}/"
 
 sed -e "${sed_param}" -i ${init_py}
 git add ${init_py}
-git commit -m "Releasing %{SEMVER}"
+git commit -m "Releasing ${SEMVER}"
 git tag ${SEMVER}
 git push origin --tags
