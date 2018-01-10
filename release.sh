@@ -18,8 +18,16 @@ releaseBranch=release-${SEMVER}
 init_py=tf_image_classification/__init__.py
 sed_param="s/\${VERSION}/${SEMVER}/"
 
-git checkout -b ${releaseBranch}
-sed -e "${sed_param}" -i ${init_py}
-git commit -am "Releasing ${SEMVER}"
-git tag ${SEMVER}
-git push origin --tags
+if [[ -z $(git status -s) ]]
+then
+    echo "tree is clean"
+    git checkout -b ${releaseBranch}
+    sed -e "${sed_param}" -i ${init_py}
+    git commit -am "Releasing ${SEMVER}"
+    git tag ${SEMVER}
+    git push origin --tags
+else
+    echo "Tree is dirty, please commit changes before running this."
+    exit
+fi
+
