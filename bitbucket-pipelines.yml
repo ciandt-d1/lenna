@@ -23,4 +23,4 @@ pipelines:
             - gcloud auth activate-service-account --key-file gcloud-api-key.json
             # Linking to the Google Cloud project
             - gcloud config set project $GCLOUD_PROJECT
-            - gsutil -m cp -a public dist/** gs://tfcf/releases/
+            - gsutil -m cp -a public-read dist/** gs://tfcf/releases/
