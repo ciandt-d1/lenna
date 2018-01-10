@@ -43,6 +43,12 @@ class EstimatorSpec(object):
 
         Returns:
             Input Function to be consumed by the Estimator API and any hook
+            :param preproc_fn:
+            :param metadata:
+            :param batch_size:
+            :param image_size:
+            :param epochs:
+            :param class_dict:
         """
         iterator_initializer_hook = IteratorInitializerHook()
 

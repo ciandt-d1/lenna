@@ -13,6 +13,12 @@ def load_and_preproc_from_file(filename, label, width, height, preproc_fn, class
         height: output height
         preproc_fn: preprocessing function
         class_dict: list of dictionary that contains two keys: 'name'(tensor) and 'depth'(int for one-hot encoding)
+        :param class_dict:
+        :param preproc_fn:
+        :param height:
+        :param width:
+        :param label:
+        :param filename:
     """
 
     image_bytes = tf.read_file(filename)
@@ -56,7 +62,7 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
     return image_decoded, labels
 
 
-def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_dict, image_size,batch_prefech=5):
+def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):
     """
     Return op to provide batches through training
 
@@ -97,6 +103,7 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
     batch_iter = dataset.make_initializable_iterator()
 
     return batch_iter
+
 
 def get_batch_loader_csv(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):
     """
