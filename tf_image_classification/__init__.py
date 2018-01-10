@@ -1,2 +1,2 @@
 
-__version__ = '${VERSION}'
+__version__ = '0.1'
