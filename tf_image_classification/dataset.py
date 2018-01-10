@@ -56,7 +56,7 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
     return image_decoded, labels
 
 
-def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_dict, image_size,batch_prefech=5):
+def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):
     """
     Return op to provide batches through training
 
@@ -111,7 +111,7 @@ def get_batch_loader_csv(metadata, batch_size, epochs, preproc_fn, class_dict, i
     dataset = tf.data.Dataset.from_tensor_slices(
         (metadata['URIs'].tolist(), metadata['labels'].factorize()[0]))
     dataset = dataset.map(lambda filename, label: load_and_preproc_from_file(
-        filename, label, width, height, preproc_fn, class_dict))
+        filename, label, image_size, image_size, preproc_fn, class_dict))
 
     if not tf.flags.FLAGS.debug:
         dataset = dataset.shuffle(buffer_size=batch_prefech * batch_size)

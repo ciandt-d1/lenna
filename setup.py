@@ -18,8 +18,6 @@ setup(
     packages=find_packages(),
     description='tensorflow image classification framework',
     install_requires=[
-        "tensorflow-gpu==1.4.1",
-        "pandas==0.22.0",
         "google-cloud-storage==1.6.0",
     ]
 )

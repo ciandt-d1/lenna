@@ -29,7 +29,7 @@ tf.app.flags.DEFINE_integer(flag_name="batch_size", default_value=1,
 tf.app.flags.DEFINE_integer(flag_name="train_steps", default_value=20,
                             docstring="Train steps")
 tf.app.flags.DEFINE_integer(flag_name="image_size", default_value=200,
-                            docstring="Image size")                            
+                            docstring="Image size")
 tf.app.flags.DEFINE_integer(flag_name="eval_freq", default_value=5,
                             docstring="Frequency to perfom evalutaion")
 tf.app.flags.DEFINE_integer(flag_name="eval_throttle_secs", default_value=100,
@@ -93,9 +93,9 @@ def train(estimator_specs):
         network_name=FLAGS.network_name, is_training=False)
 
     train_input_fn, train_input_hook = estimator_specs.input_fn(
-        batch_size=FLAGS.batch_size, metadata=train_metadata, class_dict=estimator_specs.class_dict, epochs=epochs, image_size=FLAGS.image_size,preproc_fn=preproc_fn_train)
+        batch_size=FLAGS.batch_size, metadata=train_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=epochs, image_size=FLAGS.image_size,preproc_fn=preproc_fn_train)
     eval_input_fn, eval_input_hook = estimator_specs.input_fn(
-        batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
+        batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
 
     train_hooks = []
     train_hooks.append(train_input_hook)

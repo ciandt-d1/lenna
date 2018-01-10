@@ -19,7 +19,7 @@ class EstimatorSpec(object):
         self.class_dict = []
         self.load_checkpoint_hook = None
 
-    def get_model_fn(self, network_name, endpoint, checkpoint_path):
+    def get_model_fn(self, network_name, endpoint, checkpoint_path, *args):
         """ Implement here your model function """
         pass
 
@@ -27,12 +27,12 @@ class EstimatorSpec(object):
         """ Implement here you metrics ops """
         pass
 
-    def get_preproc_fn(self, is_training, network_name):
+    def get_preproc_fn(self, is_training, network_name, **kargs):
         """ Implement here your preproc function """
         pass
 
-    def input_fn(self, batch_size, metadata, class_dict, epochs, image_size, preproc_fn):
-        """ 
+    def input_fn(self, batch_size, metadata, class_dict, is_tfrecord, epochs, image_size, preproc_fn):
+        """
         Input function to provide data to estimator model
 
         Args:
@@ -50,9 +50,14 @@ class EstimatorSpec(object):
             """Returns input and target tensors"""
 
             with tf.name_scope('Data_Loader'):
-                iterator = dataset.get_batch_loader_tfrecord(
-                    metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
-                    class_dict=class_dict)
+                if is_tfrecord:
+                    iterator = dataset.get_batch_loader_tfrecord(
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
+                        class_dict=class_dict)
+                else:
+                    iterator = dataset.get_batch_loader_csv(
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
+                        class_dict=class_dict)
 
                 next_example, next_label = iterator.get_next()
 
