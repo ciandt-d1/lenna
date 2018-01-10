@@ -14,11 +14,12 @@ __root="$(cd "$(dirname "${__dir}")" && pwd)" # <-- change this as it depends on
 
 SEMVER="${1:-}"
 
+releaseBranch=release-${SEMVER}
 init_py=tf_image_classification/__init__.py
 sed_param="s/\${VERSION}/${SEMVER}/"
 
+git checkout -b ${releaseBranch}
 sed -e "${sed_param}" -i ${init_py}
-git add ${init_py}
-git commit -m "Releasing ${SEMVER}"
+git commit -am "Releasing ${SEMVER}"
 git tag ${SEMVER}
 git push origin --tags
