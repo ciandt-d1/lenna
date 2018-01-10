@@ -97,8 +97,7 @@ def train(estimator_specs):
     eval_input_fn, eval_input_hook = estimator_specs.input_fn(
         batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
 
-    train_hooks = []
-    train_hooks.append(train_input_hook)
+    train_hooks = [train_input_hook]
     if estimator_specs.load_checkpoint_hook is not None:
         train_hooks.append(estimator_specs.load_checkpoint_hook)
 
