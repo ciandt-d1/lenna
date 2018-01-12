@@ -55,8 +55,7 @@ def train(estimator_specs):
     run_config = tf.contrib.learn.RunConfig()
     run_config = run_config.replace(model_dir=FLAGS.model_dir)
 
-    model_fn = estimator_specs.get_model_fn(
-        FLAGS.network_name, FLAGS.endpoint, FLAGS.checkpoint_path)
+    model_fn = estimator_specs.get_model_fn(FLAGS.checkpoint_path)
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
@@ -83,10 +82,8 @@ def train(estimator_specs):
     tf.logging.info("Dataset length: {} examples".format(dataset_len))
     tf.logging.info("Epochs to run: {}".format(epochs))
 
-    preproc_fn_train = estimator_specs.get_preproc_fn(
-        network_name=FLAGS.network_name, is_training=True)
-    preproc_fn_eval = estimator_specs.get_preproc_fn(
-        network_name=FLAGS.network_name, is_training=False)
+    preproc_fn_train = estimator_specs.get_preproc_fn(is_training=True)
+    preproc_fn_eval = estimator_specs.get_preproc_fn(is_training=False)
 
     train_input_fn, train_input_hook = estimator_specs.input_fn(
         batch_size=FLAGS.batch_size, metadata=train_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=epochs, image_size=FLAGS.image_size,preproc_fn=preproc_fn_train)
