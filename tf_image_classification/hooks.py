@@ -14,7 +14,6 @@ class IteratorInitializerHook(tf.train.SessionRunHook):
         tf.logging.info("Initialize batch iterator")
         self.iterator_initializer_func(session)
 
-
 class LoadCheckpointHook(tf.train.SessionRunHook):
     """Hook to initialise data iterator after Session is created."""
 
