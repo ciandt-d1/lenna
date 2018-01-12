@@ -21,8 +21,12 @@ class LoadCheckpointHook(tf.train.SessionRunHook):
     def __init__(self):
         super(LoadCheckpointHook, self).__init__()
         self.load_checkpoint_initializer_func = None
+        self.first_load = True
 
     def after_create_session(self, session, coord):
         if self.load_checkpoint_initializer_func is not None:
-            tf.logging.info("Loading weights from checkpoint")
-            self.load_checkpoint_initializer_func(session)
+            if self.first_load:
+                tf.logging.info("Loading weights from checkpoint")
+                self.load_checkpoint_initializer_func(session)
+                self.first_load = False
+
