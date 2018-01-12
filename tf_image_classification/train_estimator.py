@@ -20,10 +20,6 @@ tf.app.flags.DEFINE_string(
 tf.app.flags.DEFINE_string(
     flag_name="eval_metadata", default_value="",
     docstring="Evalset metadata")
-tf.app.flags.DEFINE_string(flag_name="network_name",
-                           default_value="inception_v4", docstring="Network architecture to use")
-tf.app.flags.DEFINE_string(flag_name="endpoint",
-                           default_value="Mixed_7d", docstring="Network endpoint name to use")
 tf.app.flags.DEFINE_integer(flag_name="batch_size", default_value=1,
                             docstring="Batch size")
 tf.app.flags.DEFINE_integer(flag_name="train_steps", default_value=20,

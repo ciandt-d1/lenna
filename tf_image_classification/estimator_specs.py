@@ -19,7 +19,7 @@ class EstimatorSpec(object):
         self.class_dict = []
         self.load_checkpoint_hook = None
 
-    def get_model_fn(self, network_name, endpoint, checkpoint_path, *args):
+    def get_model_fn(self, checkpoint_path, *args):
         """ Implement here your model function """
         pass
 
@@ -27,7 +27,7 @@ class EstimatorSpec(object):
         """ Implement here you metrics ops """
         pass
 
-    def get_preproc_fn(self, is_training, network_name, **kargs):
+    def get_preproc_fn(self, is_training, **kargs):
         """ Implement here your preproc function """
         pass
 

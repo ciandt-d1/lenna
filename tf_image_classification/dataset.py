@@ -51,7 +51,7 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
     image_decoded = tf.image.decode_jpeg(image_bytes, channels=3)
 
     if preproc_fn is not None:
-        image_decoded = preproc_fn(image_decoded, width, height)
+        image_decoded = preproc_fn(image_decoded, height, width)
 
     labels = {}
     for _class in class_dict:
