@@ -31,14 +31,16 @@ def freeze_graph(model_dir, output_tensors, output_pb):
         # Import graph from .meta file
         saver = tf.train.import_meta_graph(
             input_checkpoint + '.meta', clear_devices=clear_devices)
-        
+
+        input_graph_def = tf.get_default_graph().as_graph_def()
+
         # and restore weights
         saver.restore(sess, input_checkpoint)
 
         # Convert variables to constants
         output_graph_def = tf.graph_util.convert_variables_to_constants(
-            sess,         
-            tf.get_default_graph().as_graph_def(),            
+            sess,
+            input_graph_def,            
             output_tensors.split(","),
             variable_names_blacklist=['global_step']
         )
