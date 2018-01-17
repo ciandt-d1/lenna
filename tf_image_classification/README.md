@@ -36,6 +36,11 @@ python myEstimator.py --batch_size 64 --train_steps 10000 --train_metadata tfrec
 
 ### Running on Google ML Engine
 
+First, you must package your application (explain here how).
+```bash
+gcloud ml-engine jobs submit training JOB_ID --job-dir=gs://bucket/stagging_folder/ --module-name myEstimatorPkg.myEstimator --packages myEstimator.tar.gz,tf_image_classification-1.3.1.tar.gz,slim-0.1.tar.gz --region us-east1 --config cloud.yml --  --batch_size 128 --train_steps 1000 --train_metadata gs://bucket/tfrecords/train* --eval_metadata gs://bucket/tfrecords/eval* --checkpoint_path gs://bucket/pretrained_checkpoints/pretrained_model.ckpt --model_dir gs://bucket/trained-checkpoints/ --eval_freq 10 --eval_throttle_secs 120 --learning_rate 0.00001
+```
+
 OBS: **train_estimator.py** trains the model using the method [`train_and_evaluate`](https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate) that runs seamlessly both locally and distributed training, so you don't need to write a single line of code to run your model distributed into a ML Engine cluster.
 
 
