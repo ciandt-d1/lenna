@@ -60,7 +60,7 @@ For this, use **pb_viewer.py**
 
 ```bash
 python pb_viewer.py --input_graph_pb frozen_model.pb --output_events_path event_path
-````
+```
 
 Then
 ```bash
