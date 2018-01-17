@@ -26,7 +26,7 @@ You can prune the useless nodes using **optimize_for_inference.py**
 
 ##### How to use
 ```bash
-python optimize_for_inference.py --input frozen_model.pb --output opt_frozen_model.pb --input_names input_tensors --output_names=output_tensors
+python optimize_for_inference.py --input frozen_model.pb --output opt_frozen_model.pb --input_names input_tensors --output_names output_tensors
 ```
 
 - --input: input frozen **.pb** model
@@ -42,7 +42,7 @@ For more [look here](https://www.tensorflow.org/performance/quantization).
 
 ##### How to use
 ```bash
-python quantize_graph.py  --input frozen_model.pb --output=quantized_model.pb --output_node_names output_tensors  --print_nodes --mode=eightbit --logtostderr
+python quantize_graph.py  --input frozen_model.pb --output quantized_model.pb --output_node_names output_tensors  --print_nodes --mode eightbit --logtostderr
 ```
 
 - --input: input frozen **.pb** model
