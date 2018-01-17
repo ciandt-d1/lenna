@@ -11,8 +11,10 @@ This framework is built upon TensorFlow 1.4.0
 - **utils.py** : It contains some utility functions to perform IO with Google Cloud Storage and tf-record manipulation
 
 ### How to use
+
 We do recommend to use the framework as a pip package. Look [here](https://bitbucket.org/ciandt_it/tf_image_classification/src) to know how to build and install it.
 Once installed, all you need to do is to create a class that inherit from `tf_image_classification.estimator_specs.EstimatorSpec` and implement its abstract methods: 
+
 - `get_preproc_fn(self, is_training)`: returns a preprocessing function that will be applied upon each batch
 - `get_model_fn(self, checkpoint_path)`: returns a function that builds the graph used for training, evaluation and inference. See [here](https://www.tensorflow.org/api_docs/python/tf/contrib/learn/ModeKeys) for mor info.
 - `metric_ops(self, labels, predictions)`: returns a dictionary with metrics (_e.g._ accuracy, precision, recall, etc...). For a full list of available metrics, look [here](https://www.tensorflow.org/api_docs/python/tf/metrics)
@@ -22,6 +24,7 @@ Use [this example](https://bitbucket.org/ciandt_it/d1-ml-labs/src/master/2017-11
 Now I will suppose that you already have written your own estimator, say _myEstimator.py_. Let's take a look how to run it.
 
 ### Running locally - Example
+
 All the flags are defined on _train_estimator.py_. 
 
 ```bash
