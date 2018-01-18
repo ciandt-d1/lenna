@@ -104,3 +104,11 @@ venv.bak/
 .mypy_cache/
 .idea/
 *.orig
+
+# Tensorflow
+dist
+*egg
+*ckpt*
+*.pbtxt
+*.pb
+checkpoint

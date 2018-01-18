@@ -20,7 +20,7 @@ def freeze_graph(model_dir, output_tensors, output_pb):
         tf.loogin.error("You need to supply the name of a node to --output_tensors.")
         return -1
 
-    # Retrievecheckpoint fullpath
+    # Retrieve checkpoint fullpath
     checkpoint = tf.train.get_checkpoint_state(model_dir)
     input_checkpoint = checkpoint.model_checkpoint_path
     
@@ -60,7 +60,7 @@ if __name__ == '__main__':
     parser.add_argument("--output_tensors", type=str, default="",
                         help="The name of the output nodes, comma separated.")
     parser.add_argument("--output_pb", type=str,
-                        default="/frozen_model.pb", help="Output pb file")
+                        default="frozen_model.pb", help="Output pb file")
     args = parser.parse_args()
 
     freeze_graph(args.model_dir, args.output_tensors, args.output_pb)
