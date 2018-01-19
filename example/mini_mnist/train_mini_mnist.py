@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import tensorflow as tf
-from tf_image_classification import estimator_specs, train_estimator
+from tf_image_classification import estimator_specs, train_estimator, utils
 from tf_image_classification.hooks import LoadCheckpointHook
 #from cnn_architecture_mobile_net import cnn_architecture
 from cnn_architecture_inception_v4 import cnn_architecture
@@ -59,7 +59,7 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
             
             # Define model's architecture
             logits = cnn_architecture(
-                features, is_training=is_training)
+                features, is_training=is_training,weight_decay=params.weight_decay)
 
             if is_training:
                 if tf.gfile.Exists(checkpoint_path):                    
@@ -96,13 +96,18 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
 
 
                 total_loss = loss + reg_loss
-                learning_rate_decay_op = tf.train.exponential_decay(params.learning_rate, tf.train.get_global_step(),
-                                                                    120, 0.75, staircase=True)
+                # learning_rate_decay_op = tf.train.exponential_decay(params.learning_rate, tf.train.get_global_step(),
+                #                                                     120, 0.75, staircase=True)
 
-                train_op = tf.train.AdamOptimizer(learning_rate=learning_rate_decay_op,
-                                                  beta1=params.beta1, beta2=params.beta2,
-                                                  epsilon=params.epsilon).minimize(loss=total_loss, global_step=tf.train.get_global_step())
-                tf.summary.scalar("learning_rate",tensor=learning_rate_decay_op)
+                # train_op = tf.train.AdamOptimizer(learning_rate=learning_rate_decay_op,
+                #                                   beta1=params.beta1, beta2=params.beta2,
+                #                                   epsilon=params.epsilon).minimize(loss=total_loss, global_step=tf.train.get_global_step())
+
+                learning_rate = utils.configure_learning_rate(params.num_samples_per_epoch,tf.train.get_global_step())
+                optimizer = utils.configure_optimizer(learning_rate)
+
+                train_op = optimizer.minimize(loss=total_loss, global_step=tf.train.get_global_step())
+                #tf.summary.scalar("learning_rate",tensor=params.learning_rate)
 
                 eval_metric_ops = self.metric_ops(labels, prediction_dict)
             return tf.estimator.EstimatorSpec(

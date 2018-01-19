@@ -6,7 +6,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from google.cloud import storage
-
+FLAGS = tf.app.flags.FLAGS
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
 
 
@@ -73,3 +73,90 @@ def get_dataset_len(tfrecord_list):
     options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
     return len(tfrecord_list) * np.mean(
         list(sum(1 for _ in tf.python_io.tf_record_iterator(path, options)) for path in tfrecord_list[0:10]))
+
+
+
+def configure_optimizer(learning_rate):
+    """Configures the optimizer used for training.
+    Args:
+        learning_rate: A scalar or `Tensor` learning rate.
+    Returns:
+        An instance of an optimizer.
+    Raises:
+        ValueError: if FLAGS.optimizer is not recognized.
+    """
+    if FLAGS.optimizer == 'adadelta':
+        optimizer = tf.train.AdadeltaOptimizer(
+            learning_rate,
+            rho=FLAGS.adadelta_rho,
+            epsilon=FLAGS.opt_epsilon)
+    elif FLAGS.optimizer == 'adagrad':
+        optimizer = tf.train.AdagradOptimizer(
+            learning_rate,
+            initial_accumulator_value=FLAGS.adagrad_initial_accumulator_value)
+    elif FLAGS.optimizer == 'adam':
+        optimizer = tf.train.AdamOptimizer(
+            learning_rate,
+            beta1=FLAGS.adam_beta1,
+            beta2=FLAGS.adam_beta2,
+            epsilon=FLAGS.opt_epsilon)
+    elif FLAGS.optimizer == 'ftrl':
+        optimizer = tf.train.FtrlOptimizer(
+            learning_rate,
+            learning_rate_power=FLAGS.ftrl_learning_rate_power,
+            initial_accumulator_value=FLAGS.ftrl_initial_accumulator_value,
+            l1_regularization_strength=FLAGS.ftrl_l1,
+            l2_regularization_strength=FLAGS.ftrl_l2)
+    elif FLAGS.optimizer == 'momentum':
+        optimizer = tf.train.MomentumOptimizer(
+            learning_rate,
+            momentum=FLAGS.momentum,
+            name='Momentum')
+    elif FLAGS.optimizer == 'rmsprop':
+        optimizer = tf.train.RMSPropOptimizer(
+            learning_rate,
+            decay=FLAGS.rmsprop_decay,
+            momentum=FLAGS.rmsprop_momentum,
+            epsilon=FLAGS.opt_epsilon)
+    elif FLAGS.optimizer == 'sgd':
+        optimizer = tf.train.GradientDescentOptimizer(learning_rate)
+    else:
+        raise ValueError('Optimizer [%s] was not recognized', FLAGS.optimizer)
+    return optimizer
+
+
+def configure_learning_rate(num_samples_per_epoch, global_step):
+    """Configures the learning rate.
+    Args:
+        num_samples_per_epoch: The number of samples in each epoch of training.
+        global_step: The global_step tensor.
+    Returns:
+        A `Tensor` representing the learning rate.
+    Raises:
+        ValueError: if
+    """
+    decay_steps = int(num_samples_per_epoch / FLAGS.batch_size *
+                      FLAGS.num_epochs_per_decay)
+    if FLAGS.sync_replicas:
+        decay_steps /= FLAGS.replicas_to_aggregate
+
+    if FLAGS.learning_rate_decay_type == 'exponential':
+        return tf.train.exponential_decay(FLAGS.learning_rate,
+                                          global_step,
+                                          decay_steps,
+                                          FLAGS.learning_rate_decay_factor,
+                                          staircase=True,
+                                          name='exponential_decay_learning_rate')
+    elif FLAGS.learning_rate_decay_type == 'fixed':
+        return tf.constant(FLAGS.learning_rate, name='fixed_learning_rate')
+    elif FLAGS.learning_rate_decay_type == 'polynomial':
+        return tf.train.polynomial_decay(FLAGS.learning_rate,
+                                         global_step,
+                                         decay_steps,
+                                         FLAGS.end_learning_rate,
+                                         power=1.0,
+                                         cycle=False,
+                                         name='polynomial_decay_learning_rate')
+    else:
+        raise ValueError('learning_rate_decay_type [%s] was not recognized',
+                         FLAGS.learning_rate_decay_type)

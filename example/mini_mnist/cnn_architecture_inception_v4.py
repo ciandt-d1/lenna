@@ -6,7 +6,7 @@ import tensorflow as tf
 #from tensorflow.contrib import slim
 
 
-def cnn_architecture(inputs, is_training):
+def cnn_architecture(inputs, is_training, weight_decay):
     """
     Return network architecture
 
@@ -19,12 +19,9 @@ def cnn_architecture(inputs, is_training):
     Returns:
         Logits for each demographic network branch
     """
-
-    #tf.logging.info("is_training: {} network_name: {} endpoint: {}".format(is_training,network_name,endpoint))
-
     
     net_fn = slim_nets.get_network_fn(
-        name="inception_v4", num_classes=None, is_training=is_training, weight_decay=0.00004)
+        name="inception_v4", num_classes=None, is_training=is_training, weight_decay=weight_decay)
 
     _, endpoints = net_fn(inputs)
     net_final = endpoints['Mixed_7d']
