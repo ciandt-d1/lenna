@@ -24,7 +24,7 @@ def cnn_architecture(inputs, is_training):
 
     
     net_fn = slim_nets.get_network_fn(
-        name="inception_v4", num_classes=None, is_training=is_training, weight_decay=0.0)
+        name="inception_v4", num_classes=None, is_training=is_training, weight_decay=0.00004)
 
     _, endpoints = net_fn(inputs)
     net_final = endpoints['Mixed_7d']

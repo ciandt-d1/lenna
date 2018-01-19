@@ -85,20 +85,30 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
 
             if mode != ModeKeys.INFER:
 
-                loss = tf.losses.softmax_cross_entropy(labels['class_id'], logits)                
-                            
+                # IT IS VERY IMPORTANT TO RETRIEVE THE REGULARIZATION LOSSES
+                reg_loss = tf.losses.get_regularization_loss()
+
+                # This summary is automatically caught by the Estimator API
+                tf.summary.scalar("Regularization_Loss",tensor=reg_loss)
+                
+                loss = tf.losses.softmax_cross_entropy(labels['class_id'], logits)
+                tf.summary.scalar("XEntropy_Loss",tensor=loss)
+
+
+                total_loss = loss + reg_loss
                 learning_rate_decay_op = tf.train.exponential_decay(params.learning_rate, tf.train.get_global_step(),
                                                                     120, 0.75, staircase=True)
 
                 train_op = tf.train.AdamOptimizer(learning_rate=learning_rate_decay_op,
                                                   beta1=params.beta1, beta2=params.beta2,
-                                                  epsilon=params.epsilon).minimize(loss=loss, global_step=tf.train.get_global_step())
+                                                  epsilon=params.epsilon).minimize(loss=total_loss, global_step=tf.train.get_global_step())
+                tf.summary.scalar("learning_rate",tensor=learning_rate_decay_op)
 
                 eval_metric_ops = self.metric_ops(labels, prediction_dict)
             return tf.estimator.EstimatorSpec(
                 mode=mode,
                 predictions=prediction_dict,
-                loss=loss,
+                loss=total_loss,
                 train_op=train_op,
                 eval_metric_ops=eval_metric_ops)
 
