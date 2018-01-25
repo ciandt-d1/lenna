@@ -63,13 +63,12 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
 
             if is_training:
                 if tf.gfile.Exists(checkpoint_path):                    
-                    var_list = tf.contrib.framework.get_model_variables()
+                    vars_to_restore = utils.get_variables_to_restore()
+                    tf.logging.info("Variables to restore from {} : {}".format(checkpoint_path,vars_to_restore))
                     
                     self.load_checkpoint_hook.load_checkpoint_initializer_func = tf.contrib.framework.assign_from_checkpoint_fn(
-                        model_path=checkpoint_path, var_list=var_list, ignore_missing_vars=True)
-                    tf.logging.info("Checkpoint {} found".format(checkpoint_path))
-                    
-
+                        model_path=checkpoint_path, var_list=vars_to_restore, ignore_missing_vars=True)
+                    tf.logging.info("Checkpoint {} found".format(checkpoint_path))                    
                 else:
                     tf.logging.warning(
                         "Checkpoint {} not found, so not loaded".format(checkpoint_path))
@@ -105,8 +104,8 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
 
                 learning_rate = utils.configure_learning_rate(params.num_samples_per_epoch,tf.train.get_global_step())
                 optimizer = utils.configure_optimizer(learning_rate)
-
-                train_op = optimizer.minimize(loss=total_loss, global_step=tf.train.get_global_step())
+                vars_to_train = utils.get_variables_to_train()
+                train_op = optimizer.minimize(loss=total_loss, global_step=tf.train.get_global_step(),var_list=vars_to_train)
                 #tf.summary.scalar("learning_rate",tensor=params.learning_rate)
 
                 eval_metric_ops = self.metric_ops(labels, prediction_dict)

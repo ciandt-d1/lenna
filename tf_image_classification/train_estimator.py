@@ -34,16 +34,6 @@ tf.app.flags.DEFINE_integer(flag_name="eval_throttle_secs", default_value=120,
                             docstring="Evaluation every 'eval_throttle_secs' seconds")
 tf.app.flags.DEFINE_boolean(flag_name="debug", default_value=False, docstring="Debug mode")
 
-# tf.app.flags.DEFINE_float(flag_name="learning_rate",
-#                           default_value=1e-3, docstring="Learning Rate")
-# tf.app.flags.DEFINE_float(flag_name="beta1",
-#                           default_value=0.9, docstring="First order momentum for Adam optimizer")
-# tf.app.flags.DEFINE_float(flag_name="beta2",
-#                           default_value=0.999, docstring="Second order momentum for Adam optimizer")
-# tf.app.flags.DEFINE_float(flag_name="epsilon",
-#                           default_value=1e-8, docstring="Epsilon to avoid division by zero on Adam optimizer")
-
-
 
 ######################
 # Optimization Flags #
@@ -136,7 +126,19 @@ tf.app.flags.DEFINE_float(
     'The decay to use for the moving average.'
     'If left as None, then moving averages are not used.')
 
+#####################
+# Fine-Tuning Flags #
+#####################
 
+tf.app.flags.DEFINE_string(
+    'trainable_scopes', None,
+    'Comma-separated list of scopes to filter the set of variables to train.'
+    'By default, None would train all the variables.')
+    
+tf.app.flags.DEFINE_string(
+    'checkpoint_exclude_scopes', None,
+    'Comma-separated list of scopes of variables to exclude when restoring '
+    'from a checkpoint.')
 
 
 def train(estimator_specs):

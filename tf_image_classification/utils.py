@@ -13,7 +13,8 @@ IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
 def split_storage_name(full_path):
     """Split full_path to return bucket name and file path"""
 
-    full_path_split = "".join(full_path.split("gs://")[1:])  # Remove 'gs://' prefix
+    full_path_split = "".join(full_path.split(
+        "gs://")[1:])  # Remove 'gs://' prefix
     bucket_and_filename = full_path_split.split("/")
     bucket_name = bucket_and_filename[0]
     filename = "/".join(bucket_and_filename[1:])
@@ -36,7 +37,8 @@ def download_blob(bucket_name, source_blob_name, destination_file_name):
     tf.logging.info('Blob {} downloaded to {}.'.format(
         source_blob_name,
         destination_file_name))
-    tf.logging.info('Full path of {} {}'.format(destination_file_name, os.path.abspath(destination_file_name)))
+    tf.logging.info('Full path of {} {}'.format(
+        destination_file_name, os.path.abspath(destination_file_name)))
 
 
 def read_csv(full_filename):
@@ -48,7 +50,8 @@ def read_csv(full_filename):
         download_blob(bucket_name, filename, local_filename)
         metadata = pd.read_csv(os.path.abspath(local_filename))
         tf.logging.info("HEAD: {}".format(metadata.head()))
-        os.remove(os.path.abspath(local_filename))  # delete file immediately after reading it
+        # delete file immediately after reading it
+        os.remove(os.path.abspath(local_filename))
     else:
         tf.logging.info("Reading metadata locally")
         metadata = pd.read_csv(full_filename)
@@ -60,7 +63,8 @@ def list_tfrecord(regex):
     """Return list of files given a regex"""
 
     list_op = tf.train.match_filenames_once(regex)
-    init_ops = (tf.global_variables_initializer(), tf.local_variables_initializer())
+    init_ops = (tf.global_variables_initializer(),
+                tf.local_variables_initializer())
     with tf.Session() as sess:
         sess.run(init_ops)
         files = sess.run(list_op)
@@ -70,10 +74,10 @@ def list_tfrecord(regex):
 
 def get_dataset_len(tfrecord_list):
     """Approximate dataset length by the length of the first x-th tfrecords"""
-    options = tf.python_io.TFRecordOptions(tf.python_io.TFRecordCompressionType.GZIP)
+    options = tf.python_io.TFRecordOptions(
+        tf.python_io.TFRecordCompressionType.GZIP)
     return len(tfrecord_list) * np.mean(
         list(sum(1 for _ in tf.python_io.tf_record_iterator(path, options)) for path in tfrecord_list[0:10]))
-
 
 
 def configure_optimizer(learning_rate):
@@ -160,3 +164,44 @@ def configure_learning_rate(num_samples_per_epoch, global_step):
     else:
         raise ValueError('learning_rate_decay_type [%s] was not recognized',
                          FLAGS.learning_rate_decay_type)
+
+
+def get_variables_to_train():
+    """Returns a list of variables to train.
+    Returns:
+      A list of variables to train by the optimizer.
+    """
+    if FLAGS.trainable_scopes is None:
+        return tf.trainable_variables()
+    else:
+        scopes = [scope.strip() for scope in FLAGS.trainable_scopes.split(',')]
+
+    variables_to_train = []
+    for scope in scopes:
+        variables = tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES, scope)
+        variables_to_train.extend(variables)
+    return variables_to_train
+
+
+def get_variables_to_restore():
+    """Returns a list of variables to restore.
+    Returns:
+      A list of variables to be restored from the checkpoint.
+    """
+    exclusions = []
+    if FLAGS.checkpoint_exclude_scopes:
+        exclusions = [scope.strip()
+                      for scope in FLAGS.checkpoint_exclude_scopes.split(',')]
+
+    tf.logging.info("Exclusions: {}".format(exclusions))
+    variables_to_restore = []
+    for var in tf.contrib.framework.get_model_variables():
+        #tf.logging.info("Var: {}".format(var))
+        excluded = False
+        for exclusion in exclusions:
+            if var.op.name.startswith(exclusion):   
+                excluded = True
+                break
+        if not excluded:
+            variables_to_restore.append(var)
+    return variables_to_restore
