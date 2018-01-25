@@ -117,3 +117,10 @@ OBS: **train_estimator.py** trains the model using the method [`train_and_evalua
     * Default Value: **False**
 * `replicas_to_aggregate` : The Number of gradients to collect before updating params
     * Default Value: **1**
+
+### Fine Tuning
+
+* `trainable_scopes` : Which scopes to train. If `None`, all variables will be trained.
+    * Default Value: `None`
+* `checkpoint_exclude_scopes` : Which scopes to exclude when loading checkpoint weights. If `None`, restore all variables.
+    * Default Value: `None`
