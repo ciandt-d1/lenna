@@ -120,7 +120,7 @@ OBS: **train_estimator.py** trains the model using the method [`train_and_evalua
 
 ### Fine Tuning
 
-* `trainable_scopes` : Which scopes to train. If `None`, all variables will be trained.
+* `trainable_scopes` : Comma-separated list of scopes to train. If `None`, all variables will be trained.
     * Default Value: `None`
-* `checkpoint_exclude_scopes` : Which scopes to exclude when loading checkpoint weights. If `None`, restore all variables.
+* `checkpoint_exclude_scopes` : Comma-separated list of scopes to exclude when loading checkpoint weights. If `None`, restore all variables.
     * Default Value: `None`
