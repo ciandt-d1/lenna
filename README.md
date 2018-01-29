@@ -24,4 +24,11 @@ The example above will:
  
  The creation of this new tag will trigger a new bitbucket pipeline that will create the distribution package and 
  copy it to the bucket: `gs://tfcf/releases`. See `bitbucket-pipelines.yml` for more details.
+ 
+ ## Build and install
+ ```bash
+ python setup.py sdist
+ 
+ sudo pip install dist/tf_image_classification-2.1.0.tar.gz --upgrade
+ ```
   
