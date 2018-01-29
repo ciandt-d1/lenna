@@ -27,9 +27,9 @@ The example above will:
  
 ## Build and install
 
- ```bash
+```bash
  python setup.py sdist
  
  sudo pip install dist/tf_image_classification-2.1.0.tar.gz --upgrade
- ```
+```
   
