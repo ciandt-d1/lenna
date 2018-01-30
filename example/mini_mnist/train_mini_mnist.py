@@ -61,17 +61,24 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
             logits = cnn_architecture(
                 features, is_training=is_training,weight_decay=params.weight_decay)
 
-            if is_training:
-                if tf.gfile.Exists(checkpoint_path):                    
+            if is_training:                
+                if tf.gfile.IsDirectory(checkpoint_path):
+                    _checkpoint_path = tf.train.latest_checkpoint(checkpoint_path)
+                else:
+                    _checkpoint_path = checkpoint_path
+                    if not tf.gfile.Exists(_checkpoint_path):
+                        _checkpoint_path = None
+                
+                if _checkpoint_path is not None:                    
                     vars_to_restore = utils.get_variables_to_restore()
-                    tf.logging.info("Variables to restore from {} : {}".format(checkpoint_path,vars_to_restore))
-                    
+                    tf.logging.info("Variables to restore from {} : {}".format(_checkpoint_path,vars_to_restore))
+
                     self.load_checkpoint_hook.load_checkpoint_initializer_func = tf.contrib.framework.assign_from_checkpoint_fn(
-                        model_path=checkpoint_path, var_list=vars_to_restore, ignore_missing_vars=True)
-                    tf.logging.info("Checkpoint {} found".format(checkpoint_path))                    
+                        model_path=_checkpoint_path, var_list=vars_to_restore, ignore_missing_vars=True)
                 else:
                     tf.logging.warning(
-                        "Checkpoint {} not found, so not loaded".format(checkpoint_path))
+                        "Checkpoint {} not found, so not loaded".format(_checkpoint_path))
+
 
             prediction = tf.argmax(logits, axis=1, name="prediction")
             prediction_dict = {"class_id": prediction}
