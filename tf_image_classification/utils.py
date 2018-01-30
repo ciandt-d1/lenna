@@ -195,7 +195,8 @@ def get_variables_to_restore():
 
     tf.logging.info("Exclusions: {}".format(exclusions))
     variables_to_restore = []
-    for var in tf.contrib.framework.get_model_variables():
+    #for var in tf.contrib.framework.get_model_variables():
+    for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
         #tf.logging.info("Var: {}".format(var))
         excluded = False
         for exclusion in exclusions:
