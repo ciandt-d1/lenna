@@ -79,7 +79,7 @@ OBS: **train_estimator.py** trains the model using the method [`train_and_evalua
     * Default Value: **0.1**
 * `adam_beta1` : The exponential decay rate for the 1st moment estimates
     * Default Value: **0.9**
-* `adam_beta1` : The exponential decay rate for the 2nd moment estimates
+* `adam_beta2` : The exponential decay rate for the 2nd moment estimates
     * Default Value: **0.999**
 * `opt_epsilon` : Epsilon term for the optimizer
     * Default value: **1.0**
