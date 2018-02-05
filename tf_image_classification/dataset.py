@@ -55,9 +55,12 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
 
     labels = {}
     for _class in class_dict:
-        one_hot_label = tf.one_hot(tf.to_int32(
-            _class['tensor']), depth=_class['depth'], dtype=tf.float32)
-        labels[_class['name']] = one_hot_label
+        if _class['one-hot']:
+            one_hot_label = tf.one_hot(tf.to_int32(
+                _class['tensor']), depth=_class['depth'], dtype=tf.float32)
+            labels[_class['name']] = one_hot_label
+        else:
+            labels[_class['name']] = _class['tensor']
 
     return image_decoded, labels
 
@@ -75,9 +78,11 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
     def _parse_function(example_proto):
         """ Parse data from tf.Example. All labels are decoded as float32"""
 
-        parser_dict = {"image_bytes": tf.FixedLenFeature((), tf.string, default_value="")}
+        parser_dict = {"image_bytes": tf.FixedLenFeature(
+            (), tf.string, default_value="")}
         for d in class_dict:
-            parser_dict[d['name']] = tf.FixedLenFeature((), tf.float32, default_value=-1)
+            parser_dict[d['name']] = tf.FixedLenFeature(
+                (), tf.float32, default_value=-1)
         parsed_features = tf.parse_single_example(example_proto, parser_dict)
 
         return parsed_features
@@ -87,7 +92,8 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
 
         class_dict_tensor = []
         for d in class_dict:
-            class_dict_tensor.append({'name': d['name'], 'depth': d['depth'], 'tensor': parsed_features[d['name']]})
+            class_dict_tensor.append(
+                {'name': d['name'], 'depth': d['depth'], 'one-hot': d['one-hot'], 'tensor': parsed_features[d['name']]})
 
         return load_and_preproc(parsed_features['image_bytes'], image_size, image_size, preproc_fn, class_dict_tensor)
 

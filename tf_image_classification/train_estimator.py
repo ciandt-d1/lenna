@@ -209,3 +209,42 @@ def train(estimator_specs):
 
     tf.estimator.train_and_evaluate(
         estimator=estimator, train_spec=train_spec, eval_spec=eval_spec)
+
+
+def evaluate(estimator_specs):
+     # Check whether data is stored as TF-Records or csv
+    is_tfrecord = False
+
+    if FLAGS.eval_metadata.endswith("csv"):
+        eval_metadata = utils.read_csv(FLAGS.eval_metadata)
+        dataset_len = len(eval_metadata)
+    else:
+        is_tfrecord = True        
+        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata) 
+        dataset_len = utils.get_dataset_len(eval_metadata)   
+
+    tf.logging.info("Evalset length: {} examples".format(dataset_len))
+
+    params = tf.contrib.training.HParams(       
+        num_samples_per_epoch=dataset_len,
+        weight_decay=FLAGS.weight_decay
+    )
+
+    run_config = tf.contrib.learn.RunConfig()
+    run_config = run_config.replace(model_dir=FLAGS.model_dir)
+
+    model_fn = estimator_specs.get_model_fn(FLAGS.checkpoint_path)
+
+    estimator = tf.estimator.Estimator(
+        model_fn=model_fn,
+        params=params,
+        config=run_config
+    )
+
+    preproc_fn_eval = estimator_specs.get_preproc_fn(is_training=False)
+
+    eval_input_fn, eval_input_hook = estimator_specs.input_fn(
+        batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
+
+    eval_metrics = estimator.evaluate(input_fn=eval_input_fn,hooks=[eval_input_hook],name="Evaluation")
+    tf.logging.info(eval_metrics)
