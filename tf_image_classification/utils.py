@@ -6,6 +6,10 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from google.cloud import storage
+
+from tensorflow.python.framework import ops, dtypes
+from tensorflow.python.ops import array_ops, variables
+
 FLAGS = tf.app.flags.FLAGS
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
 
@@ -206,3 +210,49 @@ def get_variables_to_restore():
         if not excluded:
             variables_to_restore.append(var)
     return variables_to_restore
+
+
+
+def _createLocalVariable(name, shape, collections=None,
+                                validate_shape=True,
+                                dtype=dtypes.float32):
+        """Creates a new local variable."""
+        
+        collections = list(collections or [])
+        collections += [ops.GraphKeys.LOCAL_VARIABLES]
+        return variables.Variable(
+            initial_value=array_ops.zeros(shape, dtype=dtype),
+            name=name,
+            trainable=False,
+            collections=collections,
+            validate_shape=validate_shape)
+
+def streaming_confusion_matrix(name, label, prediction,
+                                weights=None, num_classes=None):
+    """
+    Compute a streaming confusion matrix
+    :param label: True labels
+    :param prediction: Predicted labels
+    :param weights: (Optional) weights (unused)
+    :param num_classes: Number of labels for the confusion matrix
+    :return: (percentConfusionMatrix,updateOp)
+    """
+    # Compute a per-batch confusion
+    batch_confusion_name = "batch_confusion_"+name
+    batch_confusion = tf.confusion_matrix(label, prediction,
+                                            num_classes=num_classes,
+                                            name=batch_confusion_name)
+
+    count = _createLocalVariable(None, (), dtype=tf.int32)
+    confusion_name = 'confusion_matrix_'+name
+    confusion = _createLocalVariable(confusion_name, [num_classes, num_classes], dtype=tf.int32)
+
+    # Create the update op for doing a "+=" accumulation on the batch
+    countUpdate = count.assign(count + tf.reduce_sum(batch_confusion))
+    confusionUpdate = confusion.assign(confusion + batch_confusion)
+
+    updateOp = tf.group(confusionUpdate, countUpdate)
+
+    percentConfusion = 100 * tf.truediv(confusion, count)
+    return percentConfusion, updateOp
+    #return tf.identity(confusion), updateOp
