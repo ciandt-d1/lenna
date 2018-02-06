@@ -1,7 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import os
+import matplotlib as mpl
+mpl.use('Agg')
+import matplotlib.pyplot as plt
+import seaborn as sns
 
+import os
 import numpy as np
 import pandas as pd
 import tensorflow as tf
@@ -9,6 +13,8 @@ from google.cloud import storage
 
 from tensorflow.python.framework import ops, dtypes
 from tensorflow.python.ops import array_ops, variables
+
+import io
 
 FLAGS = tf.app.flags.FLAGS
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
@@ -198,10 +204,11 @@ def get_variables_to_restore():
                       for scope in FLAGS.checkpoint_exclude_scopes.split(',')]
 
     tf.logging.info("Exclusions: {}".format(exclusions))
-    variables_to_restore = []
-    #for var in tf.contrib.framework.get_model_variables():
-    for var in tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES):
-        #tf.logging.info("Var: {}".format(var))
+    variables_to_restore = []    
+    all_variables = set(tf.get_collection(tf.GraphKeys.TRAINABLE_VARIABLES) + tf.get_collection(tf.GraphKeys.MODEL_VARIABLES))
+            
+    for var in all_variables: 
+        
         excluded = False
         for exclusion in exclusions:
             if var.op.name.startswith(exclusion):   
@@ -256,3 +263,28 @@ def streaming_confusion_matrix(name, label, prediction,
     #percentConfusion = 100 * tf.truediv(confusion, count)
     #return percentConfusion, updateOp
     return tf.identity(confusion), updateOp
+
+
+
+def draw_confusion_matrix(cm,title,labels,output_path):
+    """Draw confusion matrix
+
+    Args:
+        cm (numpy array): Confusion Matrix
+
+
+    """
+    plt.figure()
+    ax = sns.heatmap(cm, xticklabels=labels,
+                         yticklabels=labels, cmap='coolwarm', annot=True, robust=True, cbar=False,fmt='g').get_figure()
+        
+    plt.title(title)
+    plt.xlabel("Prediciton")
+    plt.ylabel("Ground Truth")
+    plt.tight_layout()
+    output_file = io.BytesIO()
+    ax.savefig(output_file)
+    output_bytes = output_file.getvalue()
+
+    with tf.gfile.GFile(output_path,'wb') as f:
+        f.write(output_bytes)
