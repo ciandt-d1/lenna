@@ -253,6 +253,6 @@ def streaming_confusion_matrix(name, label, prediction,
 
     updateOp = tf.group(confusionUpdate, countUpdate)
 
-    percentConfusion = 100 * tf.truediv(confusion, count)
-    return percentConfusion, updateOp
-    #return tf.identity(confusion), updateOp
+    #percentConfusion = 100 * tf.truediv(confusion, count)
+    #return percentConfusion, updateOp
+    return tf.identity(confusion), updateOp

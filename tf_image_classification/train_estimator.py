@@ -247,4 +247,5 @@ def evaluate(estimator_specs):
         batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
 
     eval_metrics = estimator.evaluate(input_fn=eval_input_fn,hooks=[eval_input_hook],name="Evaluation")
-    tf.logging.info(eval_metrics)
+    return eval_metrics
+    #tf.logging.info(eval_metrics)
