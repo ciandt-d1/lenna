@@ -28,8 +28,10 @@ def cnn_architecture(inputs, is_training, weight_decay):
     net_final = tf.layers.flatten(net_final)
 
     with tf.variable_scope("MiniMNIST"):
+        net_final = tf.layers.batch_normalization(net_final,epsilon=1e-3,momentum=0.99,name='MiniMNIST_Batchnorm_1',training=is_training)
         net_final = tf.layers.dense(net_final, 100, activation=tf.nn.relu, name='fc1', trainable=True,kernel_regularizer=tf.contrib.layers.l2_regularizer(weight_decay))
         net_final = tf.layers.dropout(net_final,rate=0.6,name="dropout_1",training=is_training)
+        net_final = tf.layers.batch_normalization(net_final,epsilon=1e-3,momentum=0.99,name='MiniMNIST_Batchnorm_2',training=is_training)
         net_logits = tf.layers.dense(net_final, 10, activation=None, name='logits', trainable=True,kernel_regularizer=tf.contrib.layers.l2_regularizer(weight_decay))
 
     return net_logits

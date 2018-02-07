@@ -113,12 +113,21 @@ class ReadImageAndConvertToJpegDoFn(beam.DoFn):
     We do this even for JPEG images to remove variations such as different number
     of channels.
     """
+    def start_bundle(self, context=None):
+        self.labels = {}
 
-    def process(self, element):
+    def process(self, element, labels):
         try:
             uri, class_id = element.element
         except AttributeError:
             uri, class_id = element
+
+        if not self.labels:
+            for i, label in enumerate(labels):
+                label = label.strip()
+                if label:
+                    self.labels[label] = i
+
 
         # TF will enable 'rb' in future versions, but until then, 'r' is
         # required.
@@ -140,11 +149,16 @@ class ReadImageAndConvertToJpegDoFn(beam.DoFn):
             error_count.inc()
             return
 
+        try:
+            label_index = self.labels[class_id]
+        except KeyError:
+            unknown_label.inc()
+
         # Convert to desired format and output.
         output = io.BytesIO()
         img.save(output, Default.FORMAT)
         image_bytes = output.getvalue()
-        yield uri, class_id, image_bytes
+        yield uri, label_index, image_bytes
 
 
 class TFExampleFromImageDoFn(beam.DoFn):
@@ -188,12 +202,17 @@ def configure_pipeline(p, opt):
     """Specify PCollection and transformations in pipeline."""
     read_input_source = beam.io.ReadFromText(
         opt.input_path, strip_trailing_newlines=True)
+    
+    read_label = beam.io.ReadFromText(
+        opt.input_labels, strip_trailing_newlines=True)
+
+    labels = (p | 'Read labels' >> read_label)
 
     _ = (p
          | 'Read input' >> read_input_source
          | 'Parse input' >> beam.Map(lambda line: csv.reader([line]).next())
          | 'Read and convert to JPEG'
-         >> beam.ParDo(ReadImageAndConvertToJpegDoFn())
+         >> beam.ParDo(ReadImageAndConvertToJpegDoFn(),beam.pvalue.AsIter(labels))
          | 'Embed and make TFExample' >> beam.ParDo(TFExampleFromImageDoFn())
          | 'SerializeToString' >> beam.Map(lambda x: x.SerializeToString())
          | 'Save to disk'
@@ -219,6 +238,10 @@ def default_args(argv):
         help='Input specified as uri to CSV file. Each line of csv file '
         'contains colon-separated GCS uri to an image and labels.')
     parser.add_argument(
+        '--input_labels',
+        required=True,
+        help='Label file')
+    parser.add_argument(
         '--output_path',
         required=True,
         help='Output directory to write results to.')
@@ -226,11 +249,10 @@ def default_args(argv):
         '--project',
         type=str,
         help='The cloud project name to be used for running this pipeline')
-
     parser.add_argument(
         '--job_name',
         type=str,
-        default='flowers-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
+        default='mini_mnist-' + datetime.datetime.now().strftime('%Y%m%d-%H%M%S'),
         help='A unique job identifier.')
     parser.add_argument(
         '--num_workers', default=20, type=int, help='The number of workers.')
