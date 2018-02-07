@@ -71,14 +71,36 @@ As the code depends both of the _tf_image_classification framework_ and _slim_, 
 In our case, they are already on GCS, so we won't need to package them, but just make a reference when submiting the job.
 However, you can also make references for these packages locally.
 
-- _tf_image_classifier_ : **gs://tfcf/releases/tf_image_classification-1.3.1.tar.gz**
+- _tf_image_classifier_ : **gs://tfcf/releases/tf_image_classification-2.3.2.tar.gz**
 - _slim_ : **gs://morghulis/libs/object-detection-1.4.1/slim-0.1.tar.gz**
 
 ```bash
 JOB_ID="MINI_MNIST_${USER}_$(date +%Y%m%d_%H%M%S)"
 
-gcloud ml-engine jobs submit training ${JOB_ID} --job-dir=gs://mini_mnist/${JOB_ID} --module-name mini_mnist.train_mini_mnist --packages dist/mini_mnist-0.1.tar.gz,gs://tfcf/releases/tf_image_classification-1.3.1.tar.gz,gs://morghulis/libs/object-detection-1.4.1/slim-0.1.tar.gz --region us-east1 --config ./cloud.yml --  --batch_size 32 --train_steps 1000 --train_metadata gs://mini_mnist/tf_records/train* --eval_metadata gs://mini_mnist/tf_records/eval* --checkpoint_path gs://mini_mnist/pretrained_ckpt/inception_v4.ckpt --model_dir gs://mini_mnist/trained_models/${JOB_ID} --eval_freq 10 --eval_throttle_secs 120 --learning_rate 0.00001 --image_size 299
+gcloud ml-engine jobs submit training ${JOB_ID} --job-dir=gs://mini_mnist/${JOB_ID} --module-name mini_mnist.train_mini_mnist --packages dist/mini_mnist-0.1.tar.gz,gs://tfcf/releases/tf_image_classification-2.3.2.tar.gz,gs://morghulis/libs/object-detection-1.4.1/slim-0.1.tar.gz --region us-east1 --config ./cloud.yml --  --batch_size 32 --train_steps 1000 --train_metadata gs://mini_mnist/tf_records/train* --eval_metadata gs://mini_mnist/tf_records/eval* --checkpoint_path gs://mini_mnist/pretrained_ckpt/inception_v4.ckpt --model_dir gs://mini_mnist/trained_models/${JOB_ID} --eval_freq 10 --eval_throttle_secs 120 --learning_rate 0.00001 --image_size 299
 ```
+
+Empirically, it was observed that with two-step training, better results can be achieved. 
+On the first step, transfer learning is done and for that only the last layers are trained. This allows softer weight changes when training all variables.
+On the second step, all variables are set to be trained.
+
+### Transfer Learning
+```bash
+```
+
+### Fine Tuning
+```bash
+```
+
+### Training from scratch
+
+If you don't want to use a pretrained network you can just ignore the **checkpoint** argument.
+```bash
+JOB_ID="MINI_MNIST_TRAIN_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+gcloud ml-engine jobs submit training ${JOB_ID} --job-dir=gs://mini_mnist/experiments/${JOB_ID} --module-name mini_mnist.train_mini_mnist --packages dist/mini_mnist-0.1.tar.gz,gs://tfcf/releases/tf_image_classification-2.3.2.tar.gz,gs://morghulis/libs/object-detection-1.4.1/slim-0.1.tar.gz --region us-east1 --config ./cloud.yml --  --batch_size 32 --train_steps 10000 --train_metadata gs://mini_mnist/tf_records/train* --eval_metadata gs://mini_mnist/tf_records/eval* --model_dir gs://mini_mnist/trained_models/${JOB_ID} --eval_freq 6 --eval_throttle_secs 15 --image_size 32 --optimizer adadelta
+```
+
 On **cloud.yml** it is defined the cluster specifications
 ```yaml
 trainingInput:
@@ -89,6 +111,21 @@ trainingInput:
   workerType: standard_gpu
   parameterServerCount: 3
   parameterServerType: standard
+```
+
+## Evaluation
+
+You may want to perform a full evaluation on your eval set or any other dataset. Use the flag **evaluate** and let the framework do the work for you.
+It will generate a confusion matrix as a **png** image.
+
+![alt text](./images/confusion_matrix.png "Confusion Matrix")
+
+Beautiful, isn't it?
+
+```bash
+JOB_ID_EVAL="MINI_MNIST_EVAL_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+gcloud ml-engine jobs submit training ${JOB_ID_EVAL} --job-dir=gs://mini_mnist/experiments/${JOB_ID_EVAL} --module-name mini_mnist.train_mini_mnist --packages dist/mini_mnist-0.1.tar.gz,gs://tfcf/releases/tf_image_classification-2.3.2.tar.gz,gs://morghulis/libs/object-detection-1.4.1/slim-0.1.tar.gz --region us-east1 --config ./cloud_eval.yml --  --batch_size 32 --eval_metadata gs://mini_mnist/tf_records/eval* --model_dir gs://mini_mnist/trained_models/MINI_MNIST_TRAIN_rodrigofp_20180207_173637 --image_size 32 --evaluate --output_cm_folder gs://mini_mnist/experiments/MINI_MNIST_TRAIN_rodrigofp_20180207_173637/confusion_matrices --labels gs://mini_mnist/metadata/labels.txt
 ```
 
 ## Rename input and output tensors
