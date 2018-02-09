@@ -266,7 +266,7 @@ def streaming_confusion_matrix(name, label, prediction,
 
 
 
-def draw_confusion_matrix(cm,title,labels,output_path):
+def draw_confusion_matrix(cm,title,labels,output_path, is_large=False):
     """Draw confusion matrix
 
     Args:
@@ -275,9 +275,20 @@ def draw_confusion_matrix(cm,title,labels,output_path):
 
     """
     plt.figure()
-    ax = sns.heatmap(cm, xticklabels=labels,
-                         yticklabels=labels, cmap='coolwarm', annot=True, robust=True, cbar=False,fmt='g').get_figure()
+    if not is_large:
+        ax = sns.heatmap(cm, xticklabels=labels,
+                            yticklabels=labels, cmap='coolwarm', annot=True, robust=True, cbar=False,fmt='g').get_figure()                    
+    else:
         
+        # Normalize values - TODO: optimize it
+        cm_norm = np.zeros(cm.shape)
+        cm_sum = np.sum(cm,axis=1)
+        for i,v in enumerate(cm_sum):    
+            cm_norm[i] = cm[i].astype(np.float)/float(v)
+
+        plt.subplots(figsize=(12,10))
+        ax = sns.heatmap(cm_norm, xticklabels=[],yticklabels=[], cmap='coolwarm', robust=False, cbar=True,fmt='g').get_figure()
+    
     plt.title(title)
     plt.xlabel("Prediciton")
     plt.ylabel("Ground Truth")
