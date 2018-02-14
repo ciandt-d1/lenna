@@ -1,0 +1,29 @@
+trainingInput:
+  runtimeVersion: "1.4"
+  scaleTier: CUSTOM
+  masterType: standard_gpu
+  workerCount: 3
+  workerType: standard_gpu
+  parameterServerCount: 1
+  parameterServerType: standard
+  hyperparameters:
+      goal: MAXIMIZE
+      hyperparameterMetricTag: Sum_acc
+      maxTrials: 30
+      maxParallelTrials: 1
+      params:        
+        - parameterName: weight_decay
+          type: DISCRETE
+          discreteValues: [0.000005, 0.00005, 0.0005, 0.005, 0.05 ]           
+        - parameterName: learning_rate
+          type: DISCRETE
+          discreteValues: [0.00000001, 0.0000001, 0.000001, 0.00001, 0.0001, 0.001, 0.01]
+        - parameterName: learning_rate_decay_factor
+          type: DISCRETE
+          discreteValues: [0.16, 0.33, 0.5, 0.67, 0.95]   
+        - parameterName: num_epochs_per_decay
+          type: DISCRETE
+          discreteValues: [0.5, 1.0, 2.0, 4.0]
+        - parameterName: rmsprop_momentum
+          type: DISCRETE
+          discreteValues: [0.5, 0.9, 0.99]        

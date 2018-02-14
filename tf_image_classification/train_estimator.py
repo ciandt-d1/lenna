@@ -181,18 +181,20 @@ def train(estimator_specs):
         weight_decay=FLAGS.weight_decay
     )
 
-    run_config = tf.contrib.learn.RunConfig()
-    run_config = run_config.replace(model_dir=FLAGS.model_dir)
-
     env = json.loads(os.environ.get('TF_CONFIG', '{}'))
     task_data = env.get('task') or {'type': 'master', 'index': 0}
     trial = task_data.get('trial')
+    
     if trial is not None:
-        output_dir = os.path.join(FLAGS.checkpoint_path, trial)
+        output_dir = os.path.join(FLAGS.model_dir, trial)
+        tf.logging.info("Hyperparameter Tuning - Trial {}. model_dir = {}".format(trial,output_dir))
     else:
-        output_dir = FLAGS.checkpoint_path
+        output_dir = FLAGS.model_dir
 
-    model_fn = estimator_specs.get_model_fn(output_dir)
+    model_fn = estimator_specs.get_model_fn(FLAGS.checkpoint_path)
+
+    run_config = tf.contrib.learn.RunConfig()
+    run_config = run_config.replace(model_dir=output_dir)
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
