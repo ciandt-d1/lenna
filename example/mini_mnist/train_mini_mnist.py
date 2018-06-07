@@ -4,8 +4,8 @@ import tensorflow as tf
 from tf_image_classification import estimator_specs, train_estimator, utils
 from tf_image_classification.hooks import LoadCheckpointHook
 #from cnn_architecture_mobile_net import cnn_architecture
-#from cnn_architecture_inception_v4 import cnn_architecture
-from cnn_architecture_small import cnn_architecture
+from cnn_architecture_inception_v4 import cnn_architecture
+#from cnn_architecture_small import cnn_architecture
 from tensorflow.contrib.learn import ModeKeys
 import sys
 import os
@@ -15,11 +15,11 @@ import os
 #####################################
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_boolean(
-    flag_name="evaluate", default_value=False, docstring="Evaluation mode")
+    name="evaluate", default=False, help="Evaluation mode")
 tf.app.flags.DEFINE_string(
-    flag_name="labels", default_value=None, docstring="File which contains Mini_MNIST labels")
-tf.app.flags.DEFINE_string(flag_name='output_cm_folder',
-                           default_value=None, docstring='Folder to save confusion matrices')
+    name="labels", default=None, help="File which contains Mini_MNIST labels")
+tf.app.flags.DEFINE_string(name='output_cm_folder',
+                           default=None, help='Folder to save confusion matrices')
 
 
 class MiniMNIST(estimator_specs.EstimatorSpec):
@@ -34,27 +34,22 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
             image_resize = tf.image.resize_images(
                 tf.to_float(image), [height, width])
             image_norm = tf.divide(image_resize, 255.0)
-            # image_norm = tf.subtract(image_norm, 0.5)
-            # image_norm = tf.multiply(image_norm, 2)
 
             return image_norm
         return _preproc
 
-    def get_model_fn(self, checkpoint_path):
+    def get_model_fn(self):
         """ 
         Build model function to return network architecture
 
         Args:
             network_name: string
-                Network name to build upon. See base_architectures.py to check the availables networks            
-            checkpoint_path: string
-                Checkpoint to load.
+                Network name to build upon. See base_architectures.py to check the availables networks                        
 
         Returns:
             Model Function to be consumed by the Estimator API
         """
-        self.load_checkpoint_hook = LoadCheckpointHook()
-
+        
         def model_fn(features, labels, mode, params):
             """
             Returns network architecture
@@ -74,30 +69,7 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
             # Define model's architecture
             logits = cnn_architecture(
                 features, is_training=is_training, weight_decay=params.weight_decay)
-
-            if is_training:
-                if checkpoint_path is not None:
-                    if tf.gfile.IsDirectory(checkpoint_path):
-                        _checkpoint_path = tf.train.latest_checkpoint(
-                            checkpoint_path)
-                    else:
-                        _checkpoint_path = checkpoint_path
-                        if not tf.gfile.Exists(_checkpoint_path):
-                            _checkpoint_path = None
-
-                    if _checkpoint_path is not None:
-                        vars_to_restore = utils.get_variables_to_restore()
-                        tf.logging.info("Variables to restore from {} : {}".format(
-                            _checkpoint_path, vars_to_restore))
-
-                        self.load_checkpoint_hook.load_checkpoint_initializer_func = tf.contrib.framework.assign_from_checkpoint_fn(
-                            model_path=_checkpoint_path, var_list=vars_to_restore, ignore_missing_vars=True)
-                    else:
-                        tf.logging.warning(
-                            "Checkpoint {} not found, so not loaded".format(_checkpoint_path))
-                else:
-                    tf.logging.info("No checkpoint passed. Training from scratch then")
-
+            
             prediction = tf.argmax(logits, axis=1, name="prediction")
             prediction_dict = {"class_id": prediction}
 
@@ -127,7 +99,6 @@ class MiniMNIST(estimator_specs.EstimatorSpec):
                 tf.logging.info("Variables to train: {}".format(vars_to_train))
                 
                 if is_training:
-
                     # You DO must get this collection in order to perform updates on batch_norm variables
                     update_ops = tf.get_collection(tf.GraphKeys.UPDATE_OPS)
                     with tf.control_dependencies(update_ops):

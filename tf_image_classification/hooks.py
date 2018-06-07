@@ -29,7 +29,3 @@ class LoadCheckpointHook(tf.train.SessionRunHook):
                 tf.logging.info("Loading weights from checkpoint")
                 self.load_checkpoint_initializer_func(session)
                 self.first_load = False
-
-    # def after_run(self, run_context, run_values):
-    #     reg_loss=tf.get_default_graph().get_tensor_by_name("total_regularization_loss:0")
-    #     tf.logging.info("REG LOSS: {}".format(run_context.session.run(reg_loss)))

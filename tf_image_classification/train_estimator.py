@@ -14,27 +14,29 @@ tf.logging.set_verbosity(tf.logging.INFO)
 # Set default flags for the output directories
 FLAGS = tf.app.flags.FLAGS
 tf.app.flags.DEFINE_string(
-    flag_name='model_dir', default_value='./models',
-    docstring='Output directory for model and training stats.')
-tf.app.flags.DEFINE_string(flag_name="checkpoint_path", default_value=None,
-                           docstring="Checkpoint path to load pre-trained weights")
+    name='model_dir', default='./models',
+    help='Output directory for model and training stats.')
+tf.app.flags.DEFINE_string(name="warm_start_ckpt", default=None,
+                           help="Checkpoint path to load pre-trained weights")
 tf.app.flags.DEFINE_string(
-    flag_name="train_metadata", default_value="",
-    docstring="Trainset metadata")
+    name="train_metadata", default="",
+    help="Trainset metadata")
 tf.app.flags.DEFINE_string(
-    flag_name="eval_metadata", default_value="",
-    docstring="Evalset metadata")
-tf.app.flags.DEFINE_integer(flag_name="batch_size", default_value=1,
-                            docstring="Batch size")
-tf.app.flags.DEFINE_integer(flag_name="train_steps", default_value=20,
-                            docstring="Train steps")
-tf.app.flags.DEFINE_integer(flag_name="image_size", default_value=299,
-                            docstring="Image size")
-tf.app.flags.DEFINE_integer(flag_name="eval_freq", default_value=5,
-                            docstring="Frequency to perfom evalutaion")
-tf.app.flags.DEFINE_integer(flag_name="eval_throttle_secs", default_value=120,
-                            docstring="Evaluation every 'eval_throttle_secs' seconds")
-tf.app.flags.DEFINE_boolean(flag_name="debug", default_value=False, docstring="Debug mode")
+    name="eval_metadata", default="",
+    help="Evalset metadata")
+tf.app.flags.DEFINE_integer(name="batch_size", default=1,
+                            help="Batch size")
+tf.app.flags.DEFINE_integer(name="train_steps", default=20,
+                            help="Train steps")
+tf.app.flags.DEFINE_integer(name="image_size", default=299,
+                            help="Image size")
+tf.app.flags.DEFINE_integer(name="eval_freq", default=5,
+                            help="Frequency to perfom evalutaion")
+tf.app.flags.DEFINE_integer(name="eval_throttle_secs", default=120,
+                            help="Evaluation every 'eval_throttle_secs' seconds")
+tf.app.flags.DEFINE_boolean(name="debug", default=False, help="Debug mode")
+tf.app.flags.DEFINE_boolean(
+    name="shuffle", default=True, help="Whether or not shuffle the dataset")
 
 
 ######################
@@ -136,12 +138,28 @@ tf.app.flags.DEFINE_string(
     'trainable_scopes', None,
     'Comma-separated list of scopes to filter the set of variables to train.'
     'By default, None would train all the variables.')
-    
+
 tf.app.flags.DEFINE_string(
     'checkpoint_exclude_scopes', None,
     'Comma-separated list of scopes of variables to exclude when restoring '
     'from a checkpoint.')
 
+tf.app.flags.DEFINE_string(
+    'checkpoint_restore_scopes', None,
+    'Comma-separated list of scopes of variables to restore '
+    'from a checkpoint.')
+
+#####################
+# Checkpoint Flags #
+#####################
+tf.app.flags.DEFINE_integer(name="save_summary_steps", default=100,
+                            help="Save summaries every this many steps")
+tf.app.flags.DEFINE_integer(name="save_checkpoints_steps", default=None,
+                            help="Save checkpoints every this many steps. Can not be specified with `save_checkpoints_secs`")
+tf.app.flags.DEFINE_integer(name="save_checkpoints_secs", default=None,
+                            help="Save checkpoints every this many seconds. Can not be specified with save_checkpoints_steps")
+tf.app.flags.DEFINE_integer(name="keep_checkpoint_max", default=5,
+                            help="The maximum number of recent checkpoint files to keep. -1 to keep every checkpoints")
 
 def train(estimator_specs):
 
@@ -156,6 +174,9 @@ def train(estimator_specs):
         is_tfrecord = True
         train_metadata = utils.list_tfrecord(FLAGS.train_metadata)
         eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)
+        # train_metadata = tf.data.Dataset.list_files(FLAGS.train_metadata)
+        # eval_metadata = tf.data.Dataset.list_files(FLAGS.eval_metadata)
+
         dataset_len = utils.get_dataset_len(train_metadata)
 
     epochs = int(math.ceil(FLAGS.train_steps /
@@ -164,19 +185,7 @@ def train(estimator_specs):
     tf.logging.info("Dataset length: {} examples".format(dataset_len))
     tf.logging.info("Epochs to run: {}".format(epochs))
 
-    # learning_rate = _configure_learning_rate(
-    #     dataset_len, slim.create_global_step())
-    # optimizer = _configure_optimizer(learning_rate)
-
     params = tf.contrib.training.HParams(
-        # learning_rate=FLAGS.learning_rate,
-        # beta1=FLAGS.beta1,
-        # beta2=FLAGS.beta2,
-        # epsilon=FLAGS.epsilon,
-        # min_eval_frequency=100,
-        # train_steps=FLAGS.train_steps
-        # optimizer=optimizer,
-        # learning_rate=learning_rate,
         num_samples_per_epoch=dataset_len,
         weight_decay=FLAGS.weight_decay
     )
@@ -184,40 +193,56 @@ def train(estimator_specs):
     env = json.loads(os.environ.get('TF_CONFIG', '{}'))
     task_data = env.get('task') or {'type': 'master', 'index': 0}
     trial = task_data.get('trial')
-    
+
     if trial is not None:
         output_dir = os.path.join(FLAGS.model_dir, trial)
-        tf.logging.info("Hyperparameter Tuning - Trial {}. model_dir = {}".format(trial,output_dir))
+        tf.logging.info(
+            "Hyperparameter Tuning - Trial {}. model_dir = {}".format(trial, output_dir))
     else:
         output_dir = FLAGS.model_dir
 
-    model_fn = estimator_specs.get_model_fn(FLAGS.checkpoint_path)
+    model_fn = estimator_specs.get_model_fn()
 
-    run_config = tf.contrib.learn.RunConfig()
-    run_config = run_config.replace(model_dir=output_dir)
+    
+    run_config = tf.estimator.RunConfig(
+        model_dir=output_dir,        
+        save_summary_steps= FLAGS.save_summary_steps,        
+        keep_checkpoint_max= None if (FLAGS.keep_checkpoint_max < 0) else FLAGS.keep_checkpoint_max
+    )
+
+    if FLAGS.save_checkpoints_steps is None and FLAGS.save_checkpoints_secs is None: 
+        save_checkpoints_secs = 600
+        save_checkpoints_steps = FLAGS.save_checkpoints_secs
+    elif FLAGS.save_checkpoints_steps is not None and FLAGS.save_checkpoints_secs is not None: 
+        raise('`save_checkpoints_steps` and `save_checkpoints_secs` cannot be both set.')
+    else:
+        save_checkpoints_secs = FLAGS.save_checkpoints_secs
+        save_checkpoints_steps = FLAGS.save_checkpoints_steps
+
+
+    run_config = run_config.replace(save_checkpoints_steps=save_checkpoints_steps,save_checkpoints_secs=save_checkpoints_secs)
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
         params=params,
-        config=run_config
+        config=run_config,
+        # warm_start_from=FLAGS.warm_start_ckpt
+        warm_start_from=tf.train.warm_start(
+            ckpt_to_initialize_from=FLAGS.warm_start_ckpt, vars_to_warm_start=FLAGS)
     )
 
     preproc_fn_train = estimator_specs.get_preproc_fn(is_training=True)
     preproc_fn_eval = estimator_specs.get_preproc_fn(is_training=False)
 
-    train_input_fn, train_input_hook = estimator_specs.input_fn(
+    train_input_fn = estimator_specs.input_fn(
         batch_size=FLAGS.batch_size, metadata=train_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=epochs, image_size=FLAGS.image_size, preproc_fn=preproc_fn_train)
-    eval_input_fn, eval_input_hook = estimator_specs.input_fn(
+    eval_input_fn = estimator_specs.input_fn(
         batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
 
-    train_hooks = [train_input_hook]
-    if estimator_specs.load_checkpoint_hook is not None:
-        train_hooks.append(estimator_specs.load_checkpoint_hook)
-
     train_spec = tf.estimator.TrainSpec(
-        input_fn=train_input_fn, max_steps=FLAGS.train_steps, hooks=train_hooks)
+        input_fn=train_input_fn, max_steps=FLAGS.train_steps)
     eval_spec = tf.estimator.EvalSpec(
-        input_fn=eval_input_fn, steps=FLAGS.eval_freq, throttle_secs=FLAGS.eval_throttle_secs, hooks=[eval_input_hook])
+        input_fn=eval_input_fn, steps=FLAGS.eval_freq, throttle_secs=FLAGS.eval_throttle_secs)
 
     tf.estimator.train_and_evaluate(
         estimator=estimator, train_spec=train_spec, eval_spec=eval_spec)
@@ -231,33 +256,34 @@ def evaluate(estimator_specs):
         eval_metadata = utils.read_csv(FLAGS.eval_metadata)
         dataset_len = len(eval_metadata)
     else:
-        is_tfrecord = True        
-        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata) 
-        dataset_len = utils.get_dataset_len(eval_metadata)   
+        is_tfrecord = True
+        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)
+        dataset_len = utils.get_dataset_len(eval_metadata)
 
     tf.logging.info("Evalset length: {} examples".format(dataset_len))
 
-    params = tf.contrib.training.HParams(       
+    params = tf.contrib.training.HParams(
         num_samples_per_epoch=dataset_len,
         weight_decay=FLAGS.weight_decay
     )
 
-    run_config = tf.contrib.learn.RunConfig()
+    run_config = tf.estimator.RunConfig()
     run_config = run_config.replace(model_dir=FLAGS.model_dir)
 
-    model_fn = estimator_specs.get_model_fn(FLAGS.checkpoint_path)
+    model_fn = estimator_specs.get_model_fn()
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
         params=params,
-        config=run_config
+        config=run_config,
+        warm_start_from=FLAGS.warm_start_ckpt
     )
 
     preproc_fn_eval = estimator_specs.get_preproc_fn(is_training=False)
 
-    eval_input_fn, eval_input_hook = estimator_specs.input_fn(
+    eval_input_fn = estimator_specs.input_fn(
         batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
 
-    eval_metrics = estimator.evaluate(input_fn=eval_input_fn,hooks=[eval_input_hook],name="Evaluation")
+    eval_metrics = estimator.evaluate(
+        input_fn=eval_input_fn, name="Evaluation")
     return eval_metrics
-    #tf.logging.info(eval_metrics)

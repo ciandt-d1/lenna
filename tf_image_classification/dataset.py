@@ -104,11 +104,9 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
     if not tf.flags.FLAGS.debug:
         dataset = dataset.shuffle(buffer_size=batch_prefech * batch_size)
 
-    dataset = dataset.repeat(epochs)
-    dataset = dataset.batch(batch_size)
-    batch_iter = dataset.make_initializable_iterator()
-
-    return batch_iter
+    dataset = dataset.repeat(epochs) #TODO: optimize these steps
+    
+    return dataset.batch(batch_size)
 
 
 def get_batch_loader_csv(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):

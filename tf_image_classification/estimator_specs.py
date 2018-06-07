@@ -17,9 +17,8 @@ class EstimatorSpec(object):
         super(EstimatorSpec, self).__init__()
         # List of dict that contains two keys, name(label name) and depth(number of classes)
         self.class_dict = []
-        self.load_checkpoint_hook = None
 
-    def get_model_fn(self, checkpoint_path, *args):
+    def get_model_fn(self, *args):
         """ Implement here your model function """
         pass
 
@@ -50,26 +49,20 @@ class EstimatorSpec(object):
             :param epochs:
             :param class_dict:
         """
-        iterator_initializer_hook = IteratorInitializerHook()
 
         def _input_fn():
             """Returns input and target tensors"""
 
             with tf.name_scope('Data_Loader'):
                 if is_tfrecord:
-                    iterator = dataset.get_batch_loader_tfrecord(
+                    batch = dataset.get_batch_loader_tfrecord(
                         metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
                         class_dict=class_dict)
                 else:
-                    iterator = dataset.get_batch_loader_csv(
+                    batch = dataset.get_batch_loader_csv(
                         metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
                         class_dict=class_dict)
 
-                next_example, next_label = iterator.get_next()
+                return batch
 
-                iterator_initializer_hook.iterator_initializer_func = \
-                    lambda sess: sess.run(iterator.initializer)
-
-                return next_example, next_label
-
-        return _input_fn, iterator_initializer_hook
+        return _input_fn
