@@ -30,6 +30,11 @@ The example above will:
 ```bash
  python setup.py sdist
  
- sudo pip install dist/tf_image_classification-2.1.0.tar.gz --upgrade
+ sudo pip install dist/tf_image_classification-3.0.0.tar.gz --upgrade
 ```
   
+### To build documentation
+
+```bash
+  make html
+```

@@ -112,3 +112,8 @@ dist
 *.pbtxt
 *.pb
 checkpoint
+
+#sphinx docs
+_build/
+_static/
+_templates

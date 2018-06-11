@@ -162,6 +162,25 @@ tf.app.flags.DEFINE_integer(name="keep_checkpoint_max", default=5,
                             help="The maximum number of recent checkpoint files to keep. -1 to keep every checkpoints")
 
 def train(estimator_specs):
+    """Train your model defined by ``estimator_specs``.
+
+    Here is where all the main flow is defined to train your model.
+    The following steps take place:
+
+    * Read the dataset (from tf-records or csv) into `tf.data.Dataset <https://www.tensorflow.org/api_docs/python/tf/data/Dataset>`_
+    * Check whether the job will be for hyperparameter tuning (ML Engine) or not
+    * Create estimator `tf.estimator.Estimator <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator>`_ from :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
+    * Create input functions for both training and evaluation steps
+    * Train and Evaluate `tf.estimator.train_and_evaluate <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator/train_and_evaluate>`_ .
+
+    Args:
+
+        ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be trained
+
+    Returns:
+
+        Nothing is returned since the ``ckpt`` and ``summaries`` files are already saved during the training.
+    """
 
      # Check whether data is stored as TF-Records or csv
     is_tfrecord = False
@@ -173,9 +192,7 @@ def train(estimator_specs):
     else:
         is_tfrecord = True
         train_metadata = utils.list_tfrecord(FLAGS.train_metadata)
-        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)
-        # train_metadata = tf.data.Dataset.list_files(FLAGS.train_metadata)
-        # eval_metadata = tf.data.Dataset.list_files(FLAGS.eval_metadata)
+        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)       
 
         dataset_len = utils.get_dataset_len(train_metadata)
 
@@ -226,9 +243,8 @@ def train(estimator_specs):
         model_fn=model_fn,
         params=params,
         config=run_config,
-        # warm_start_from=FLAGS.warm_start_ckpt
         warm_start_from=tf.train.warm_start(
-            ckpt_to_initialize_from=FLAGS.warm_start_ckpt, vars_to_warm_start=FLAGS)
+            ckpt_to_initialize_from=FLAGS.warm_start_ckpt, vars_to_warm_start=FLAGS.checkpoint_restore_scopes)
     )
 
     preproc_fn_train = estimator_specs.get_preproc_fn(is_training=True)
@@ -249,7 +265,17 @@ def train(estimator_specs):
 
 
 def evaluate(estimator_specs):
-     # Check whether data is stored as TF-Records or csv
+    """Evaluate your model defined by ``estimator_specs``
+
+    Args:
+
+        ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be evaluated
+
+    Returns:
+
+        ``metrics`` (dict): Dictionary of metrics defined on :func:`~tf_image_classification.estimator_specs.EstimatorSpec.metric_ops`
+    """
+
     is_tfrecord = False
 
     if FLAGS.eval_metadata.endswith("csv"):
