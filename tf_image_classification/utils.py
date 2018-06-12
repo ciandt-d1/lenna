@@ -1,4 +1,12 @@
 # -*- coding: utf-8 -*-
+"""
+.. module:: utils
+   :platform: Unix
+   :synopsis: Utilities
+
+.. moduleauthor:: Rodrigo Pereira <rodrigofp@ciandt.com>
+
+"""
 
 import matplotlib as mpl
 mpl.use('Agg')
@@ -20,8 +28,16 @@ FLAGS = tf.app.flags.FLAGS
 IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
 
 
-def split_storage_name(full_path):
-    """Split full_path to return bucket name and file path"""
+def split_storage_name(full_path):   
+    """ Split file path on storage (Google Cloud Storage) to return bucket name and file path
+
+        Args:
+            ``full_path`` (string): file path to split
+
+        Returns:
+            ``bucket_name`` (string): bucket name
+            ``filename`` (string): basename
+    """
 
     full_path_split = "".join(full_path.split(
         "gs://")[1:])  # Remove 'gs://' prefix
@@ -33,11 +49,27 @@ def split_storage_name(full_path):
 
 
 def on_storage(full_path):
+    """ Check whether or not a file is located on Google Cloud Storage
+
+        Args:
+            ``full_path`` (string): file path
+
+        Returns:
+            ``flag`` (bool)
+            
+    """
     return full_path.startswith("gs://")
 
 
 def download_blob(bucket_name, source_blob_name, destination_file_name):
-    """Downloads a blob from the bucket."""
+    """ Downloads a blob from Google Cloud Storage
+    
+        Args:
+            ``bucket_name`` (string)
+            ``source_blob_name`` (string)
+            ``destination_file_name`` (string) 
+        
+    """
     storage_client = storage.Client()
     bucket = storage_client.get_bucket(bucket_name)
     blob = bucket.blob(source_blob_name)
@@ -52,7 +84,15 @@ def download_blob(bucket_name, source_blob_name, destination_file_name):
 
 
 def read_csv(full_filename):
-    """Return metadata as pandas DataFrame whether on storage or locally"""
+    """ Return dataset metadata as `pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html>`_
+    
+        Args:
+            ``full_filename`` (string): csv file where each row posses the image names
+
+        Return:
+            ``metadata`` (`pandas.DataFrame <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html>`_): dataset metadata
+    
+    """
     if on_storage(full_filename):
         tf.logging.info("Reading metadata from storage")
         local_filename = "tmp.csv"
@@ -70,7 +110,15 @@ def read_csv(full_filename):
 
 
 def list_tfrecord(regex):
-    """Return list of files given a regex"""
+    """ Return list of files given a regex
+    
+        Args:
+            ``regex`` (string): File regex. It must follow Google Cloud Storage `Wild Card Convension <https://cloud.google.com/storage/docs/gsutil/addlhelp/WildcardNames>`_
+
+        Returns:
+            ``files`` (list): files that match ``regex``
+
+    """
 
     list_op = tf.train.match_filenames_once(regex)
     init_ops = (tf.global_variables_initializer(),
@@ -83,21 +131,45 @@ def list_tfrecord(regex):
 
 
 def get_dataset_len(tfrecord_list):
-    """Approximate dataset length by the length of the first x-th tfrecords"""
+    """ Approximate dataset length by the length of the first x-th tfrecords
+    
+        If you don't know the exact length of you dataset, this helper function will help you.
+
+        Args:
+            ``tfrecord_list`` (list): list of all tf-records to estimate dataset length
+
+        Returns:
+            Estimated dataset length
+    """
     options = tf.python_io.TFRecordOptions(
         tf.python_io.TFRecordCompressionType.GZIP)
     return len(tfrecord_list) * np.mean(
-        list(sum(1 for _ in tf.python_io.tf_record_iterator(path, options)) for path in tfrecord_list[0:10]))
+        list(sum(1 for _ in tf.python_io.tf_record_iterator(path, options)) for path in tfrecord_list[0:20]))
 
 
 def configure_optimizer(learning_rate):
-    """Configures the optimizer used for training.
-    Args:
-        learning_rate: A scalar or `Tensor` learning rate.
-    Returns:
-        An instance of an optimizer.
-    Raises:
-        ValueError: if FLAGS.optimizer is not recognized.
+    """ Configures the optimizer used for training.
+
+        To choose the optimzer use tf.flags.FLAGS provided by :mod:~tf_image_classification.train_estimator
+
+        Available optimizers:
+
+        * `Adadelta <https://www.tensorflow.org/api_docs/python/tf/train/AdadeltaOptimizer>`_
+        * `Adagrad <https://www.tensorflow.org/api_docs/python/tf/train/AdagradOptimizer>`_
+        * `Adam <https://www.tensorflow.org/api_docs/python/tf/train/AdamOptimizer>`_
+        * `Ftrl <https://www.tensorflow.org/api_docs/python/tf/train/FtrlOptimizer>`_
+        * `Momentum <https://www.tensorflow.org/api_docs/python/tf/train/MomentumOptimizer>`_
+        * `RMSProp <https://www.tensorflow.org/api_docs/python/tf/train/RMSPropOptimizer>`_
+        * `SGD <https://www.tensorflow.org/api_docs/python/tf/train/GradientDescentOptimizer>`_    
+    
+        Args:
+            learning_rate: A scalar(float) or `tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_. You can configure  
+        
+        Returns:
+            An instance of an optimizer.
+        
+        Raises:
+            ValueError: if FLAGS.optimizer is not recognized.
     """
     if FLAGS.optimizer == 'adadelta':
         optimizer = tf.train.AdadeltaOptimizer(
@@ -140,14 +212,25 @@ def configure_optimizer(learning_rate):
 
 
 def configure_learning_rate(num_samples_per_epoch, global_step):
-    """Configures the learning rate.
-    Args:
-        num_samples_per_epoch: The number of samples in each epoch of training.
-        global_step: The global_step tensor.
-    Returns:
-        A `Tensor` representing the learning rate.
-    Raises:
-        ValueError: if
+    """ Configures the learning rate.
+
+        To choose the learning rate type use tf.flags.FLAGS provided by :mod:~tf_image_classification.train_estimator
+
+        Available learning rate:
+
+        * Fixed. Just a scalar
+        * `Exponential decay <https://www.tensorflow.org/api_docs/python/tf/train/exponential_decay>`_
+        * `Polynomial decay <https://www.tensorflow.org/api_docs/python/tf/train/polynomial_decay>`_
+
+        Args:
+            ``num_samples_per_epoch`` (int) : The number of samples in each epoch of training.
+            ``global_step`` (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): The global_step tensor.
+        
+        Returns:
+            A `tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_ representing the learning rate.
+        
+        Raises:
+            ValueError: learning_rate not defined
     """
     decay_steps = int(num_samples_per_epoch / FLAGS.batch_size *
                       FLAGS.num_epochs_per_decay)
@@ -177,9 +260,10 @@ def configure_learning_rate(num_samples_per_epoch, global_step):
 
 
 def get_variables_to_train():
-    """Returns a list of variables to train.
-    Returns:
-      A list of variables to train by the optimizer.
+    """ Returns a list of variables to train.
+    
+        Returns:
+            A list of variables to train.
     """
     if FLAGS.trainable_scopes is None:
         return tf.trainable_variables()
@@ -194,9 +278,10 @@ def get_variables_to_train():
 
 
 def get_variables_to_restore():
-    """Returns a list of variables to restore.
-    Returns:
-      A list of variables to be restored from the checkpoint.
+    """ Returns a list of variables to restore.
+    
+        Returns:
+            A list of variables to be restored from the checkpoint.
     """
     exclusions = []
     if FLAGS.checkpoint_exclude_scopes:
@@ -223,7 +308,7 @@ def get_variables_to_restore():
 def _createLocalVariable(name, shape, collections=None,
                                 validate_shape=True,
                                 dtype=dtypes.float32):
-        """Creates a new local variable."""
+        """ Creates a new local variable."""
         
         collections = list(collections or [])
         collections += [ops.GraphKeys.LOCAL_VARIABLES]
@@ -234,15 +319,18 @@ def _createLocalVariable(name, shape, collections=None,
             collections=collections,
             validate_shape=validate_shape)
 
-def streaming_confusion_matrix(name, label, prediction,
-                                weights=None, num_classes=None):
-    """
-    Compute a streaming confusion matrix
-    :param label: True labels
-    :param prediction: Predicted labels
-    :param weights: (Optional) weights (unused)
-    :param num_classes: Number of labels for the confusion matrix
-    :return: (percentConfusionMatrix,updateOp)
+def streaming_confusion_matrix(name, label, prediction, num_classes=None):
+    """ Compute a streaming confusion matrix
+    
+        Args:
+            ``label`` (string): True labels
+            ``prediction`` (string): Predicted labels            
+            ``num_classes`` (int): Number of labels for the confusion matrix
+
+
+        Returns:
+            ``percentConfusionMatrix`` (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): Confusion matrix tensor
+            ``updateOp`` (`tf.Operation <https://www.tensorflow.org/api_docs/python/tf/Operation>`_): Op that update confusion matrix through batches
     """
     # Compute a per-batch confusion
     batch_confusion_name = "batch_confusion_"+name
@@ -267,10 +355,14 @@ def streaming_confusion_matrix(name, label, prediction,
 
 
 def draw_confusion_matrix(cm,title,labels,output_path, is_large=False):
-    """Draw confusion matrix
+    """ Draw confusion matrix
 
-    Args:
-        cm (numpy array): Confusion Matrix
+        Args:
+            ``cm`` (numpy array):
+            ``title`` (string): plot title
+            ``labels`` (list): list of labels to be plot on axis ticks
+            ``output_path`` (string): where to save output figure
+            ``is_large`` (bool): if *True*, labels will not be displayed.
 
 
     """

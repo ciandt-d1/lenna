@@ -7,8 +7,13 @@ Welcome to tf_image_classification's documentation!
 ===================================================
 
 .. toctree::
-   :maxdepth: 3
+   :maxdepth: 3   
    :caption: Contents:
+
+   sphinx-docs/doc_estimator_spec
+   sphinx-docs/doc_train_estimator
+   sphinx-docs/doc_dataset
+   sphinx-docs/doc_utils
 
 
 
@@ -19,10 +24,3 @@ Indices and tables
 * :ref:`modindex`
 * :ref:`search`
 
-.. autoclass:: tf_image_classification.estimator_specs.EstimatorSpec
-	:members:
-
-h1 - train and evaluate
-
-.. autofunction:: tf_image_classification.train_estimator.train
-.. autofunction:: tf_image_classification.train_estimator.evaluate

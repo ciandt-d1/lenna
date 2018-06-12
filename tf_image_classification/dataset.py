@@ -1,24 +1,32 @@
 # -*- coding: utf-8 -*-
+"""
+.. module:: dataset
+   :platform: Unix
+   :synopsis: Utilities for `tf.data.Dataset <https://www.tensorflow.org/api_docs/python/tf/data/Dataset>`_ manipulation
+
+.. moduleauthor:: Rodrigo Pereira <rodrigofp@ciandt.com>
+
+"""
 
 import tensorflow as tf
 
 
 def load_and_preproc_from_file(filename, label, width, height, preproc_fn, class_dict):
-    """
-    Load images from bytes to tensors
+    """ Load and process image from disk
+        
+        This function will open ``filename`` as a JPEG image and apply the preprocessing procedure defined by ``preproc_fn``
+        
+        Args:
+            ``filename`` (string): Image filename
+            ``label`` (int): 0-based label
+            ``width`` (int): Width to be used on ``preproc_fn``
+            ``height`` (int): Height to be used on ``preproc_fn``
+            ``preproc_fn`` (function): Preprocessing function
+            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
 
-    Args:
-        image_bytes: Image tensor as byte string
-        width: output width
-        height: output height
-        preproc_fn: preprocessing function
-        class_dict: list of dictionary that contains two keys: 'name'(tensor) and 'depth'(int for one-hot encoding)
-        :param class_dict:
-        :param preproc_fn:
-        :param height:
-        :param width:
-        :param label:
-        :param filename:
+        Returns:
+            image_decoded (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): Image decoded and preprocessed
+            labels (dict): labels from each class. It can be one-hot or not. It depends on what is defined on _class['one-hot']
     """
 
     image_bytes = tf.read_file(filename)
@@ -37,15 +45,20 @@ def load_and_preproc_from_file(filename, label, width, height, preproc_fn, class
 
 
 def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
-    """
-    Load images from bytes to tensors
+    """ Load and process image from disk
+        
+        This function will decode ``image_bytes`` as a JPEG image and apply the preprocessing procedure defined by ``preproc_fn``
+        
+        Args:
+            ``image_bytes`` (string): base64 coded image            
+            ``width`` (int): Width to be used on ``preproc_fn``
+            ``height`` (int): Height to be used on ``preproc_fn``
+            ``preproc_fn`` (function): Preprocessing function
+            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
 
-    Args:
-        image_bytes: Image tensor as byte string
-        width: output width
-        height: output height
-        preproc_fn: preprocessing function
-        class_dict: list of dictionary that contains two keys: 'name'(tensor) and 'depth'(int for one-hot encoding)
+        Returns:
+            image_decoded (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): Image decoded and preprocessed
+            labels (dict): processed labels for each class. It can be one-hot or not. It depends on what is defined on _class['one-hot']
     """
 
     image_decoded = tf.image.decode_jpeg(image_bytes, channels=3)
@@ -66,13 +79,21 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
 
 
 def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):
-    """
-    Return op to provide batches through training
+    """ Get dataset from tfrecords
+        
+        This function will decode ``image_bytes`` as a JPEG image and apply the preprocessing procedure defined by ``preproc_fn``
+        
+        Args:
+            ``metadata`` (string): regex that matches all tfrecords to be loaded
+            ``batch_size`` (int): Batch size
+            ``epochs`` (int): Number of epochs to replicated dataset
+            ``preproc_fn`` (function): Preprocessing function
+            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``image_size`` (int): image size to be used by ``preproc_fn``
+            ``batch_prefech`` (int): How many batches to pre-load into RAM memory. Default=5
 
-    Args:
-    metadata: pandas Dataframe or tfrecord
-    batch_size: int
-    is_tfrecord: bool
+        Returns:
+            ``dataset`` (`tf.data.Dataset <https://www.tensorflow.org/api_docs/python/tf/data/Dataset>`_): Dataset to be input of estimator
     """
 
     def _parse_function(example_proto):
@@ -110,14 +131,23 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
 
 
 def get_batch_loader_csv(metadata, batch_size, epochs, preproc_fn, class_dict, image_size, batch_prefech=5):
-    """
-    Return op to provide batches through training
+    """ Get dataset from csv file
+        
+        This function will decode ``image_bytes`` as a JPEG image and apply the preprocessing procedure defined by ``preproc_fn``
+        
+        Args:
+            ``metadata`` (`pandas.Dataframe <https://pandas.pydata.org/pandas-docs/stable/generated/pandas.DataFrame.html>`_): regex that matches all tfrecords to be loaded
+            ``batch_size`` (int): Batch size
+            ``epochs`` (int): Number of epochs to replicated dataset
+            ``preproc_fn`` (function): Preprocessing function
+            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``image_size`` (int): image size to be used by ``preproc_fn``
+            ``batch_prefech`` (int): How many batches to pre-load into RAM memory. Default=5
 
-    Args:
-    metadata: pandas Dataframe or tfrecord
-    batch_size: int
-    is_tfrecord: bool
+        Returns:
+            ``dataset`` (`tf.data.Dataset <https://www.tensorflow.org/api_docs/python/tf/data/Dataset>`_): Dataset to be input of estimator
     """
+
 
     dataset = tf.data.Dataset.from_tensor_slices(
         (metadata['URIs'].tolist(), metadata['labels'].factorize()[0]))

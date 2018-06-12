@@ -174,11 +174,9 @@ def train(estimator_specs):
     * Train and Evaluate `tf.estimator.train_and_evaluate <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator/train_and_evaluate>`_ .
 
     Args:
-
         ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be trained
 
     Returns:
-
         Nothing is returned since the ``ckpt`` and ``summaries`` files are already saved during the training.
     """
 
@@ -268,11 +266,9 @@ def evaluate(estimator_specs):
     """Evaluate your model defined by ``estimator_specs``
 
     Args:
-
         ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be evaluated
 
     Returns:
-
         ``metrics`` (dict): Dictionary of metrics defined on :func:`~tf_image_classification.estimator_specs.EstimatorSpec.metric_ops`
     """
 

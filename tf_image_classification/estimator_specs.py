@@ -26,7 +26,7 @@ class EstimatorSpec(object):
 
        If you follow the schema presented on the `MiniMNIST` example, you don't need to overwrite the method :func:`input_fn`.
 
-    Recall that the attribute ``class_dict`` is set as an list.
+    Recall that the attribute ``class_dict`` is set as a list.
     It defines how the labels from your dataset should be decoded.
     You may have multiple labels when dealing with multi-task problems.
     `Take a read on it <https://www.kdnuggets.com/2016/07/multi-task-learning-tensorflow-part-1.html>`_
