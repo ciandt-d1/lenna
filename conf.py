@@ -45,6 +45,8 @@ class Mock(MagicMock):
 MOCK_MODULES = ['tensorflow']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+autodoc_mock_imports = ['tf_image_classification']
+
 
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.todo',
