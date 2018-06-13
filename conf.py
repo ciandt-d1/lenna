@@ -16,9 +16,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-import os
-import sys
-sys.path.insert(0, os.path.abspath('.'))
+# import os
+# import sys
+# sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- General configuration ------------------------------------------------
@@ -32,6 +32,19 @@ sys.path.insert(0, os.path.abspath('.'))
 # ones.
 
 #autodoc_mock_imports = ['tf_image_classification']
+
+
+import sys
+from unittest.mock import MagicMock
+
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
+
+MOCK_MODULES = ['tensorflow']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+
 
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.todo',
