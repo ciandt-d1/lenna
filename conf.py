@@ -36,7 +36,10 @@
 
 #import tf_image_classification
 
-autodoc_mock_imports = ['tf_image_classification']
+#autodoc_mock_imports = ['tf_image_classification']
+
+import sys
+sys.path.insert(0, os.path.abspath('./'))
 
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.todo',

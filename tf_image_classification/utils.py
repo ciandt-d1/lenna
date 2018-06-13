@@ -49,10 +49,7 @@ def split_storage_name(full_path):
 
 
 def on_storage(full_path):
-    """
-    on_storage(full_path)
-    
-    Check whether or not a file is located on Google Cloud Storage
+    """ Check whether or not a file is located on Google Cloud Storage
 
         Args:
             ``full_path`` (string): file path
