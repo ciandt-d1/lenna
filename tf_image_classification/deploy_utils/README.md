@@ -52,7 +52,7 @@ python quantize_graph.py  --input frozen_model.pb --output quantized_model.pb --
 - --mode: always use _eightbit_ option in order to convert your weights to 8bits fixed-point weights;
 - --logtostderr: log everything else
 
-### PB viewer
+### Visualize graph
 If you want to check your graph using tensorboard, you first need to generate the events files.
 For this, use **pb_viewer.py**
 

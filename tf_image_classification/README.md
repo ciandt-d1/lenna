@@ -1,6 +1,6 @@
 # TensorFlow Image Classification Framework
 
-This framework is built upon TensorFlow 1.4.0
+This framework is built upon TensorFlow 1.8.0
 
 ### Hierarchy
 

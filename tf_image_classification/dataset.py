@@ -22,7 +22,7 @@ def load_and_preproc_from_file(filename, label, width, height, preproc_fn, class
             ``width`` (int): Width to be used on ``preproc_fn``
             ``height`` (int): Height to be used on ``preproc_fn``
             ``preproc_fn`` (function): Preprocessing function
-            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``class_dict`` (list): See :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
 
         Returns:
             image_decoded (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): Image decoded and preprocessed
@@ -54,7 +54,7 @@ def load_and_preproc(image_bytes, width, height, preproc_fn, class_dict):
             ``width`` (int): Width to be used on ``preproc_fn``
             ``height`` (int): Height to be used on ``preproc_fn``
             ``preproc_fn`` (function): Preprocessing function
-            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``class_dict`` (list): See :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
 
         Returns:
             image_decoded (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): Image decoded and preprocessed
@@ -88,7 +88,7 @@ def get_batch_loader_tfrecord(metadata, batch_size, epochs, preproc_fn, class_di
             ``batch_size`` (int): Batch size
             ``epochs`` (int): Number of epochs to replicated dataset
             ``preproc_fn`` (function): Preprocessing function
-            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``class_dict`` (list): See :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
             ``image_size`` (int): image size to be used by ``preproc_fn``
             ``batch_prefech`` (int): How many batches to pre-load into RAM memory. Default=5
 
@@ -140,7 +140,7 @@ def get_batch_loader_csv(metadata, batch_size, epochs, preproc_fn, class_dict, i
             ``batch_size`` (int): Batch size
             ``epochs`` (int): Number of epochs to replicated dataset
             ``preproc_fn`` (function): Preprocessing function
-            ``class_dict`` (list): See :class:tf_image_classification.estimator_specs.EstimatorSpec
+            ``class_dict`` (list): See :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
             ``image_size`` (int): image size to be used by ``preproc_fn``
             ``batch_prefech`` (int): How many batches to pre-load into RAM memory. Default=5
 

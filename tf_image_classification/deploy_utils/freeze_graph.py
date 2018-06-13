@@ -1,15 +1,30 @@
+# -*- coding: utf-8 -*-
+"""
+.. module:: deploy_utils
+   :platform: Unix
+   :synopsis: Utilities to help you deploy your models
+
+.. moduleauthor:: Rodrigo Pereira <rodrigofp@ciandt.com>
+
+"""
+
 import os
 import argparse
 import tensorflow as tf
 
 
 def freeze_graph(model_dir, output_tensors, output_pb):
-    """Extract the sub graph defined by the output nodes and convert 
-    all its variables into constant 
-    Args:
-        model_dir: the root folder containing the checkpoint state file
-        output_tensors: a string, containing all the output node's names, 
-                            comma separated
+    """ Freeze graph model into **.pb** file
+    
+    Extract the sub graph defined by the output nodes and convert all its variables to constants
+
+    Args:    
+        ``model_dir`` (str): directory that contains all checkpoint files (.ckpt, .meta, .info)
+        
+        ``output_tensors`` (str):  comma separated list of all the output node's names
+
+        ``output_pb`` (str): output **.pb** frozen graph file      
+        
     """
     if not tf.gfile.Exists(model_dir):
         raise AssertionError(
