@@ -31,10 +31,10 @@
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 
-import sys
-sys.path.append('./tf_image_classification/')
+#import sys
+#sys.path.append('./tf_image_classification/')
 #autodoc_mock_imports = ['tf_image_classification']
-import tf_image_classification
+#import tf_image_classification
 
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.todo',
