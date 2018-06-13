@@ -16,9 +16,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- General configuration ------------------------------------------------
@@ -32,11 +32,6 @@
 # ones.
 
 #autodoc_mock_imports = ['tf_image_classification']
-
-import os
-
-if 'READTHEDOCS' not in os.environ:
-    import cython_generated_ext
 
 extensions = ['sphinx.ext.autodoc',
     'sphinx.ext.todo',
