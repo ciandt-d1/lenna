@@ -45,14 +45,14 @@
 # # MOCK_MODULES = ['tensorflow','tf_image_classification','tf_image_classification.dataset','tf_image_classification.utils','tf_image_classification.estimator_specs','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
 # # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-import sys
-import os
-print(sys.path)
-#print(os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('.'))
-#sys.path.append(os.path.abspath('.'))
-print(sys.path)
-#print(os.getcwd())
+# import sys
+# import os
+# print(sys.path)
+# #print(os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('.'))
+# #sys.path.append(os.path.abspath('.'))
+# print(sys.path)
+# #print(os.getcwd())
 
 # autodoc_mock_imports = ['tf_image_classification']
 
