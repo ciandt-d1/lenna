@@ -11,7 +11,7 @@ __version__ = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',  open('{}/__init__.py'.format(project_name)).read()
 ).group(1)
 
-req_list = ["google-cloud-storage","matplotlib==2.1.2","seaborn==0.8.1"]
+req_list = ["google-cloud-storage","matplotlib==2.1.2","seaborn==0.8.1",'six']
 
 setup(
     name=project_name,
