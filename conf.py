@@ -16,9 +16,9 @@
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
-# import os
-# import sys
-# sys.path.insert(0, os.path.abspath('.'))
+import os
+import sys
+sys.path.insert(0, os.path.abspath('.'))
 
 
 # -- General configuration ------------------------------------------------
@@ -45,7 +45,7 @@
 # MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
 # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-autodoc_mock_imports = ['tf_image_classification']
+#autodoc_mock_imports = ['tf_image_classification','six']
 
 
 extensions = ['sphinx.ext.autodoc',
