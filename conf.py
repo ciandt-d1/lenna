@@ -42,7 +42,7 @@ class Mock(MagicMock):
     def __getattr__(cls, name):
         return MagicMock()
 
-MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','numpy','pandas','seaborn']
+MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 autodoc_mock_imports = ['tf_image_classification']
