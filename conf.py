@@ -50,6 +50,8 @@ print("OLHA O GAAAAAASSSS")
 print(sys.path)
 print(os.path.abspath('.'))
 sys.path.insert(0, os.path.abspath('.'))
+print(sys.path)
+print(os.getcwd())
 print("PASSOU")
 
 #autodoc_mock_imports = ['tf_image_classification','six']
