@@ -34,26 +34,26 @@
 #autodoc_mock_imports = ['tf_image_classification']
 
 
-import sys
-from mock import Mock as MagicMock
+# import sys
+# # from mock import Mock as MagicMock
 
-class Mock(MagicMock):
-    @classmethod
-    def __getattr__(cls, name):
-        return MagicMock()
+# # class Mock(MagicMock):
+# #     @classmethod
+# #     def __getattr__(cls, name):
+# #         return MagicMock()
 
-MOCK_MODULES = ['tensorflow','tf_image_classification','tf_image_classification.dataset','tf_image_classification.utils','tf_image_classification.estimator_specs','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
-sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+# # MOCK_MODULES = ['tensorflow','tf_image_classification','tf_image_classification.dataset','tf_image_classification.utils','tf_image_classification.estimator_specs','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
+# # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-import os
-print("OLHA O GAAAAAASSSS")
-print(sys.path)
-#print(os.path.abspath('.'))
-sys.path.insert(0, os.path.abspath('.'))
-#sys.path.append(os.path.abspath('.'))
-print(sys.path)
-#print(os.getcwd())
-print("PASSOU")
+# import os
+# print("OLHA O GAAAAAASSSS")
+# print(sys.path)
+# #print(os.path.abspath('.'))
+# sys.path.insert(0, os.path.abspath('.'))
+# #sys.path.append(os.path.abspath('.'))
+# print(sys.path)
+# #print(os.getcwd())
+# print("PASSOU")
 
 # autodoc_mock_imports = ['tf_image_classification']
 
@@ -61,13 +61,7 @@ print("PASSOU")
 extensions = [
     'sphinx.ext.autodoc',
     'sphinx.ext.todo',
-    'sphinx.ext.viewcode',
-    'sphinx.ext.githubpages',
-    'sphinx.ext.autosummary']
-
-autodoc_default_flags = ['members']
-autosummary_generate= True
-
+    'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
