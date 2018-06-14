@@ -7,8 +7,6 @@ import utils
 import json
 import os
 
-slim = tf.contrib.slim
-
 tf.logging.set_verbosity(tf.logging.INFO)
 
 # Set default flags for the output directories

@@ -34,16 +34,16 @@
 #autodoc_mock_imports = ['tf_image_classification']
 
 
-# import sys
-# from mock import Mock as MagicMock
+import sys
+from mock import Mock as MagicMock
 
-# class Mock(MagicMock):
-#     @classmethod
-#     def __getattr__(cls, name):
-#         return MagicMock()
+class Mock(MagicMock):
+    @classmethod
+    def __getattr__(cls, name):
+        return MagicMock()
 
-# MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
-# sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
+MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
+sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
 #autodoc_mock_imports = ['tf_image_classification','six']
 
