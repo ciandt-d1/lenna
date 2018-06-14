@@ -45,10 +45,10 @@ class Mock(MagicMock):
 MOCK_MODULES = ['tensorflow','tf_image_classification','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
 sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
+import os
 print("OLHA O GAAAAAASSSS")
 print(sys.path)
 print(os.path.abspath('.'))
-import os
 sys.path.insert(0, os.path.abspath('.'))
 print("PASSOU")
 
