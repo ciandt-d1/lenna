@@ -3,4 +3,3 @@ numpy
 pandas
 tensorflow==1.8.0
 matplotlib
-sphinx==1.6.3

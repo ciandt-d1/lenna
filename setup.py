@@ -19,5 +19,6 @@ setup(
     include_package_data=True,
     packages=find_packages(),
     description='tensorflow image classification framework',
-    install_requires=req_list
+    install_requires=req_list,
+    author = 'CI&T'
 )
