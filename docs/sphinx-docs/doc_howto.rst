@@ -39,7 +39,7 @@ Running locally - Example
 
 	python myEstimator.py --batch_size 64 --train_steps 10000 \
 	--train_metadata tfrecords_path/train* --eval_metadata tfrecords_path/eval* \
-	--checkpoint_path checkpoint_path/pretrained_ckpt.ckpt --model_dir ./models \
+	--warm_start_ckpt checkpoint_path/pretrained_ckpt.ckpt --model_dir ./models \
 	--eval_freq 10 --eval_throttle_secs 30 --learning_rate 0.00001 
 
 *************************************
@@ -55,7 +55,7 @@ First, you must package your application as a pip package.
 	--packages myEstimator.tar.gz,tf_image_classification-3.0.0.tar.gz,slim-0.1.tar.gz \
 	--region us-east1 --config cloud.yml --  --batch_size 128 --train_steps 1000 \
 	--train_metadata gs://bucket/tfrecords/train* \ --eval_metadata gs://bucket/tfrecords/eval* \
-	--checkpoint_path gs://bucket/pretrained_checkpoints/pretrained_model.ckpt \
+	--warm_start_ckpt gs://bucket/pretrained_checkpoints/pretrained_model.ckpt \
 	--model_dir gs://bucket/trained-checkpoints/ --eval_freq 10 \
 	--eval_throttle_secs 120 --learning_rate 0.00001
 
@@ -65,17 +65,29 @@ First, you must package your application as a pip package.
 	:func:`~tf_image_classification.train_estimator.train` uses the method `train_and_evaluate <https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate>`_ that runs seamlessly both locally and distributed training, so you **don't need to write a single line of code** to run your model distributed into a ML Engine cluster.
 
 
-
 ******
 FLAGS
 ******
 
-Common
-=======
+The framework uses `TensorFlow Flags <https://www.tensorflow.org/api_docs/python/tf/flags>`_ as argument parser.
+One advantage over python standard `ArgumentParser <https://docs.python.org/2/library/argparse.html>`_ is that the flags can be retrieved
+throughout any **.py** file.
+In the context of the framework, the flags below are can be retrieved by your program.
+
+Example
+^^^^^^^
+
+.. code-block:: python
+
+    FLAGS = tf.app.flags.FLAGS
+    print(FLAGS.learning_rate)
+
+Standard Flags
+^^^^^^^^^^^^^^
 
 * `model_dir` : Output directory for model and training stats
     * Default value: **None** 
-* `checkpoint_path` : Checkpoint to load pre-trained model
+* `warm_start_ckpt` : Checkpoint to load pre-trained model
     * Default value: **None**
 * `train_metadata` : Path to train metadata ( **.csv** or **.tfrecord**)
     * Default value: **None**
@@ -94,8 +106,8 @@ Common
 * `debug` : Debug mode (does not shuffle dataset)
     * Default value: **False**
 
-Optimizers
-===========
+Optimizer Flags
+^^^^^^^^^^^^^^^
 
 * `weight_decay` : The weight decay on the model weights (_e.g._ batchnorm layers)
     * Defaut value: **0.00004**
@@ -136,8 +148,8 @@ Optimizers
     * Default Value: **0.9**
 
 
-Learning rate
-==============
+Learning Rate Flags
+^^^^^^^^^^^^^^^^^^^^
 
 * `learning_rate_decay_type` : Specifies how the learning rate is decayed.
 	* Default Value: **exponential**
@@ -162,27 +174,27 @@ Learning rate
     * Default Value: **1**
 
 
-Fine Tuning
-============
+Fine Tuning Flags
+^^^^^^^^^^^^^^^^^^
 
 * `trainable_scopes` : Comma-separated list of scopes to train. If `None`, all variables will be trained.
-    * Default Value : `None`
+    * Default Value : **None**
 * `checkpoint_exclude_scopes` : Comma-separated list of scopes to exclude when loading checkpoint weights. If `None`, restore all variables.
-    * Default Value : `None`
+    * Default Value : **None**
 * `checkpoint_restore_scopes`: Comma-separated list of scopes of variables to restore from a checkpoint.
-	* Default Value : `None`
+	* Default Value : **None**
 
-Checkpoint
-===========
+Checkpoint Flags
+^^^^^^^^^^^^^^^^^
 
 * `save_summary_steps` : Save summaries every this many steps
-	* Default Value: 100
+	* Default Value: **100**
                             
 * `save_checkpoints_steps` : Save checkpoints every this many steps. Can not be specified with `save_checkpoints_secs`
-	* Default Value: None
+	* Default Value: **None**
                             
 * `save_checkpoints_secs` : Save checkpoints every this many seconds. Can not be specified with save_checkpoints_steps
-	* Default Value: None
+	* Default Value: **None**
                             
-* `keep_checkpoint_max` : The maximum number of recent checkpoint files to keep. -1 to keep every checkpoints
-	* Default Value: 5
+* `keep_checkpoint_max` : The maximum number of recent **ckpt** files to keep. -1 to keep all checkpoints
+	* Default Value: **5**

@@ -8,7 +8,7 @@ Welcome to tf_image_classification's documentation!
 ####################################################
 
 .. toctree::
-   :maxdepth: 3  
+   :maxdepth: 2 
    :caption: Contents:
 
    sphinx-docs/doc_howto
@@ -16,7 +16,8 @@ Welcome to tf_image_classification's documentation!
    sphinx-docs/doc_train_estimator
    sphinx-docs/doc_dataset
    sphinx-docs/doc_utils
-   sphinx-docs/doc_deploy_utils   
+   sphinx-docs/doc_deploy_utils
+   sphinx-docs/doc_mini_mnist
 
 
 Indices and tables

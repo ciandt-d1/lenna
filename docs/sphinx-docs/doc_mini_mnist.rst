@@ -1,0 +1,274 @@
+####################
+Mini MNIST Tutorial
+####################
+
+This tutorial aims to provide a reference code using the tf_image_classification framework.
+The dataset used is a subset of the MNIST and it is versioned both images tf-records.
+This tutorial comprises:
+
+    * Dataset preprocessing using `DataFlow <https://cloud.google.com/dataflow/>`_, the GCP `Apache Beam <https://beam.apache.org/>`_ runner
+    * Creation of your own estimator
+    * Training 
+    * Model post-processing for deployment.
+
+For this tutorial, it was used the networks provided by `TensorFlow Slim <https://github.com/tensorflow/models/tree/master/research/slim/nets>`_ and also a network trained from scratch. Please, take a look on the source code.
+
+.. note::
+
+    The GCS paths presented here are just examples. 
+    Alter them according to your needs and your project_id on GCP.
+
+***********************************************************
+Transform images and labels into tf-records using Dataflow
+***********************************************************
+
+The dataset used in this tutorial consists of only 600 images, so you can easily perform this operation locally.
+Once dealing with a huge amount of data, it is preferable to preprocess your dataset on cloud. 
+Using DataFlow you can achieve this seamlessly by just adding the flags ``--cloud`` and ``--num_workers``.
+If you prefer you can let DataFlow to autoscale but just not including ``--num_workers``
+
+HOW TO RUN
+===========
+
+Train set
+----------
+
+Cloud
+^^^^^^
+
+.. code-block:: bash
+    
+    python dataflow_jpeg_to_tfrecord.py \
+        --input_path gs://mini_mnist/trainset_gcs.csv \
+        --input_labels gs://mini_mnist/metadata/labels.txt \
+        --output_path gs://mini_mnist/tf_records/train \
+        --num_workers 10 \
+        --job_name mini-mnist-train \
+        --cloud
+
+Local
+^^^^^^
+
+.. code-block:: bash
+
+    python dataflow_jpeg_to_tfrecord.py \
+        --input_path ./dataset/trainset_local.csv \
+        --input_labels ./labels.txt \
+        --output_path ./dataset/tf_records/train
+
+Eval set
+---------
+
+Cloud
+^^^^^^
+
+.. code-block:: bash
+
+    python dataflow_jpeg_to_tfrecord.py \
+        --input_path gs://mini_mnist/evalset_gcs.csv \
+        --input_labels gs://mini_mnist/metadata/labels.txt \
+        --output_path gs://mini_mnist/tf_records/eval \
+        --num_workers 10 \
+        --job_name mini-mnist-eval \
+        --cloud
+
+
+Local
+^^^^^^
+
+.. code-block:: bash
+
+    python dataflow_jpeg_to_tfrecord.py \
+        --input_path ./dataset/evalset_local.csv \
+        --input_labels ./labels.txt \
+        --output_path ./dataset/tf_records/eval
+
+
+Input files
+------------
+    
+**label.txt** contains the labels itself as strings. It is used gerenerate numerical indices.
+    
+>>> zero
+... one
+... two
+... .
+... .
+... nine
+
+
+**trainset_gcs.csv** and **eval_gcs.csv** are the list of image paths and their labels
+
+>>> gs://mini_mnist/images/1/img_249.jpg,one
+... gs://mini_mnist/images/1/img_12.jpg,one
+... gs://mini_mnist/images/1/img_140.jpg,one
+... gs://mini_mnist/images/1/img_401.jpg,one
+... .
+... .
+
+*******************
+Training Estimator
+*******************
+
+Take a look on **MiniMNIST** class on **train_mini_mnist.py**. 
+There it's implemented the following methods from :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
+
+    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.get_preproc_fn`
+    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.get_model_fn`
+    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.metric_ops`
+    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.input_fn`: This isn't implemented by `MiniMNIST` once it's already implemented in the base class.
+
+.. note::
+ 
+    * IT IS VERY IMPORTANT TO RETRIEVE THE REGULARIZATION LOSSES AND ADD THEM TO YOUR LOSS, OTHERWISE YOUR MODEL WILL BE PRONE TO **OVERFITTING**.
+    * **DO** RETRIEVE OPS UNDER **UPDATE_OPS** COLLECTION AND ADD THEM TO BE EXECUTED, OTHERWISE YOUR BATCH_NORM VARIABLES **WON'T**  BE UPDATED
+    * Sorry for the **UPPERCASE**, we suffered a lot with that in the beginning.
+
+HOW TO RUN
+===========
+
+Local
+-----
+
+.. code-block:: bash
+
+    python train_mini_mnist.py \
+        --batch_size 1 --train_steps 100 \
+        --train_metadata ./dataset/tf_records/train* \
+        --eval_metadata ./dataset/tf_records/eval* \
+        --warm_start_ckpt ./checkpoints/inception_v4.ckpt \
+        --model_dir ./trained_models --eval_freq 6 \
+        --eval_throttle_secs 15 -\
+        -learning_rate 0.001 \
+        --image_size 299
+
+
+.. note::
+
+    Inception_V4 was trained with 299x299 images, so as the original images are 28x28, it is necessary to specify the flag `--image_size`
+
+Cloud
+------
+
+Before running the training on ML Engine, you must package your project first.
+You can do this by running the following command:
+
+.. code-block:: bash
+    
+    python setup.py sdist
+
+
+You'll se that a directory **dist** is created and it contains your project package as a **tar.gz** file.
+As the code depends both of the _tf_image_classification framework and slim, their packages needed to be generated.
+In our case, they are already on GCS, so we won't need to package them, but just make a reference when submiting the job.
+However, you can also make references for these packages locally.
+
+    * `tf_image_classifier` : **gs://libs/tf_image_classification-3.0.0.tar.gz**
+    * `slim` : **gs://libs/slim-0.1.tar.gz**
+
+.. code-block:: bash
+
+    JOB_ID="MINI_MNIST_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+    gcloud ml-engine jobs submit training ${JOB_ID} \
+    --job-dir=gs://mini_mnist/${JOB_ID} --module-name mini_mnist.train_mini_mnist \
+    --packages dist/mini_mnist-0.1.tar.gz,gs://libs/tf_image_classification-3.0.0.tar.gz,gs://libs/slim-0.1.tar.gz \
+    --region us-east1 --config ./cloud.yml --  \
+    --batch_size 32 --train_steps 1000 \
+    --train_metadata gs://mini_mnist/tf_records/train* \
+    --eval_metadata gs://mini_mnist/tf_records/eval* \
+    --warm_start_ckpt gs://mini_mnist/pretrained_ckpt/inception_v4.ckpt \
+    --model_dir gs://mini_mnist/trained_models/${JOB_ID} \
+    --eval_freq 6 --eval_throttle_secs 15 \
+    --learning_rate 0.00001 \
+    --image_size 299
+
+
+**********************
+Improve your results
+**********************
+
+When it is used a pretrained model it was observed that with two-step training better results could be achieved. 
+On the first step, transfer learning is done and for that only the last layers are trained. This allows softer weight changes when training all variables.
+On the second step, all variables are set to be trained.
+
+Transfer Learning
+==================
+
+.. code-block:: bash
+
+    JOB_ID_TRANSFER="MINI_MNIST_TRANSFER_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+    gcloud ml-engine jobs submit training ${JOB_ID_TRANSFER} \
+        --job-dir=gs://mini_mnist/experiments/${JOB_ID_TRANSFER} \
+        --module-name mini_mnist.train_mini_mnist \
+        --packages mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --region us-east1 --config ./cloud.yml --  \
+        --batch_size 32 --train_steps 10000 \
+        --train_metadata gs://mini_mnist/tf_records/train* \
+        --eval_metadata gs://mini_mnist/tf_records/eval* \
+        --warm_start_ckpt gs://mini_mnist/pretrained_ckpt/inception_v4.ckpt \
+        --model_dir gs://mini_mnist/trained-checkpoints/${JOB_ID_TRANSFER} \
+        --eval_freq 6 --eval_throttle_secs 15 --learning_rate 0.000001 \
+        --learning_rate_decay_type fixed --image_size 299  --weight_decay 0.0004 \
+        --trainable_scopes MiniMNIST \
+        --checkpoint_restore_scopes Inception_V4 \
+        --checkpoint_exclude_scopes InceptionV4/AuxLogits,InceptionV4/Logits
+
+
+Fine Tuning
+=============
+
+.. code-block:: bash
+
+    JOB_ID_FINE="MINI_MNIST_FINE_TUNE_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+    gcloud ml-engine jobs submit training ${JOB_ID_FINE} \
+        --job-dir=gs://mini_mnist/experiments/${JOB_ID_FINE} \
+        --module-name --module-name mini_mnist.train_mini_mnist \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --region us-east1 --config ./cloud.yml -- \
+        --batch_size 32 --train_steps 10000 \
+        --train_metadata gs://mini_mnist/tf_records/train* \
+        --eval_metadata gs://mini_mnist/tf_records/eval* \
+        --warm_start_ckpt gs://mini_mnist/trained-checkpoints/${JOB_ID_TRANSFER} \
+        --model_dir gs://mini_mnist/trained-checkpoints/${JOB_ID_FINE} \
+        --eval_freq 6 --eval_throttle_secs 15 --learning_rate 0.0001 \
+        --learning_rate_decay_type fixed  \
+        --weight_decay 0.00004 --optimizer adam 
+
+
+Training from scratch
+======================
+
+If you don't want to use a pretrained network you can just ignore the `checkpoint` argument.
+
+.. code-block:: bash
+
+    JOB_ID="MINI_MNIST_TRAIN_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+    gcloud ml-engine jobs submit training ${JOB_ID} \
+        --job-dir=gs://mini_mnist/experiments/${JOB_ID} \
+        --module-name mini_mnist.train_mini_mnist \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --region us-east1 --config ./cloud.yml --  \
+        --batch_size 32 --train_steps 10000 \
+        --train_metadata gs://mini_mnist/tf_records/train* \
+        --eval_metadata gs://mini_mnist/tf_records/eval* \
+        --model_dir gs://mini_mnist/trained_models/${JOB_ID} \
+        --eval_freq 6 --eval_throttle_secs 15 \
+        --image_size 32 --optimizer adadelta
+
+On **cloud.yml** it is defined the cluster specifications
+
+.. code-block:: yaml
+
+    trainingInput:
+        runtimeVersion: "1.8"
+        scaleTier: CUSTOM
+        masterType: standard_gpu
+        workerCount: 5
+        workerType: standard_gpu
+        parameterServerCount: 3
+        parameterServerType: standard
+

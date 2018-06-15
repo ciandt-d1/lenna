@@ -117,3 +117,6 @@ checkpoint
 docs/build/
 docs/templates/
 
+# Mini MNIST files
+example/mini_mnist/trained_models/eval
+

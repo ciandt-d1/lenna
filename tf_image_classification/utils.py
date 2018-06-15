@@ -150,7 +150,7 @@ def get_dataset_len(tfrecord_list):
 def configure_optimizer(learning_rate):
     """ Configures the optimizer used for training.
 
-        To choose the optimzer use tf.flags.FLAGS provided by :mod:~tf_image_classification.train_estimator
+        To choose the optimzer use tf.flags.FLAGS provided by :mod:`~tf_image_classification.train_estimator`
 
         Available optimizers:
 
@@ -213,8 +213,8 @@ def configure_optimizer(learning_rate):
 
 def configure_learning_rate(num_samples_per_epoch, global_step):
     """ Configures the learning rate.
-
-        To choose the learning rate type use tf.flags.FLAGS provided by :mod:~tf_image_classification.train_estimator
+        
+        To choose the learning rate type use tf.flags.FLAGS provided by :mod:`~tf_image_classification.train_estimator`
 
         Available learning rate:
 
