@@ -45,9 +45,9 @@
 # # MOCK_MODULES = ['tensorflow','tf_image_classification','tf_image_classification.dataset','tf_image_classification.utils','tf_image_classification.estimator_specs','matplotlib','matplotlib.pyplot','numpy','pandas','seaborn','scipy','scipy.linalg', 'scipy.signal']
 # # sys.modules.update((mod_name, Mock()) for mod_name in MOCK_MODULES)
 
-# import sys
-# import os
-# sys.path.append(os.path.abspath('.'))
+import sys
+import os
+sys.path.append(os.path.abspath('..'))
 # print(sys.path)
 # #print(os.path.abspath('.'))
 # sys.path.insert(0, os.path.abspath('.'))
@@ -64,7 +64,7 @@ extensions = [
     'sphinx.ext.viewcode']
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ['_templates']
+templates_path = ['templates']
 
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
@@ -99,7 +99,7 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This patterns also effect to html_static_path and html_extra_path
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
@@ -115,8 +115,8 @@ todo_include_todos = True
 #
 #html_theme = 'alabaster'
 html_theme = 'sphinx_rtd_theme'
-html_favicon = '_static/favicon.ico'
-html_logo = '_static/logo.png'
+html_favicon = 'static/favicon.ico'
+html_logo = 'static/logo.png'
 
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
@@ -127,7 +127,7 @@ html_logo = '_static/logo.png'
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ['_static']
+html_static_path = ['static']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

@@ -114,5 +114,6 @@ dist
 checkpoint
 
 #sphinx docs
-_build/
-_templates
+docs/build/
+docs/templates/
+
