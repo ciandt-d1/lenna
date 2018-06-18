@@ -76,7 +76,7 @@ source_suffix = '.rst'
 master_doc = 'index'
 
 # General information about the project.
-project = u'tf_image_classification'
+project = u'lenna'
 copyright = u'2018, CI&T'
 author = u'CI&T'
 

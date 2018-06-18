@@ -264,11 +264,97 @@ On **cloud.yml** it is defined the cluster specifications
 .. code-block:: yaml
 
     trainingInput:
-        runtimeVersion: "1.8"
+        runtimeVersion: "1.8"   
         scaleTier: CUSTOM
         masterType: standard_gpu
         workerCount: 5
         workerType: standard_gpu
         parameterServerCount: 3
         parameterServerType: standard
+
+Evaluation
+===========
+
+You may want to perform a full evaluation on your eval set or any other dataset. Use the flag ``--evaluate`` and let the framework do the work for you.
+It will generate a confusion matrix as a **png** image.
+
+.. figure:: ../../example/mini_mnist/images/confusion_matrix.png   
+   :alt: Mini MNIST Confusion Matrix
+
+   Mini MNIST Confusion Matrix
+
+Beautiful, isn't it?
+
+.. code-block:: bash
+
+    JOB_ID_EVAL="MINI_MNIST_EVAL_${USER}_$(date +%Y%m%d_%H%M%S)"
+
+    gcloud ml-engine jobs submit training ${JOB_ID_EVAL} \
+        --job-dir=gs://mini_mnist/experiments/${JOB_ID_EVAL} \
+        --module-name mini_mnist.train_mini_mnist \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --region us-east1 --config ./cloud_eval.yml --  \
+        --batch_size 32 --eval_metadata gs://mini_mnist/tf_records/eval* \
+        --image_size 32 --evaluate \
+        --model_dir gs://mini_mnist/trained_models/MINI_MNIST_TRAIN_ID \        
+        --output_cm_folder gs://mini_mnist/experiments/MINI_MNIST_TRAIN_ID/confusion_matrices \
+        --labels gs://mini_mnist/metadata/labels.txt
+
+
+Rename input and output tensors
+================================
+
+Up to this time, the model trained both locally or distributed following the aforementioned steps using TF-1.8.0 cannot be frozen directly, because some weird ops appears on the graph regarding batchnorm layers and an error is raised when you try to use it.
+A workaround is currently implemented on **rename_nodes.py**. Please, take a look on it.
+What it's basically done is to create the graph from the source code (and not by **.meta** file), load the checkpoint and save it again. Yeah, just that. The good point of this approach is that you can rename your input tensor for easy usage on deployment, so you don't have to spend minutes searching it on the graph itself.
+
+HOW TO RUN
+-----------
+
+.. code-block:: bash
+
+    python rename_nodes.py --warm_start_ckpt /path/to/model.ckpt \
+        --output_checkpoint_path /path/to/renamed_model.ckpt \
+        --image_size 30
+
+Post-processing
+================
+
+Below it is presented the code to perfom some operations on Mini MNIST example. 
+Run the commands below from utils directory.
+
+Freeze graph
+=============
+
+Transform **.ckpt** files to **.pb**
+
+.. code-block:: bash
+
+    python freeze_graph.py --model_dir /path/to/renamed_model/ --output_tensors prediction \
+        --output_pb /path/to/frozen_model.pb
+
+Prune useless nodes
+====================
+
+Prune nodes only used for training
+
+.. code-block:: bash
+
+    python optimize_for_inference.py \
+        --input /path/to/frozen_model.pb \
+        --output /path/to/opt_frozen_model.pb \
+        --input_names input_image \
+        --output_names prediction
+
+
+Quantization
+==============
+
+.. code-block:: bash
+
+    python quantize_graph.py  \
+        --input /path/to/opt_frozen_model.pb \
+        --output /path/to/quantized_model.pb \
+        --output_node_names prediction  \
+        --print_nodes --mode eightbit --logtostderr
 

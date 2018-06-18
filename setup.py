@@ -5,7 +5,7 @@ import re
 from setuptools import find_packages
 from setuptools import setup
 
-project_name = 'tf_image_classification'
+project_name = 'lenna'
 
 __version__ = re.search(
     r'__version__\s*=\s*[\'"]([^\'"]*)[\'"]',  open('{}/__init__.py'.format(project_name)).read()
@@ -19,7 +19,7 @@ setup(
     version=__version__,
     include_package_data=True,
     packages=find_packages(),
-    description='tensorflow image classification framework',
+    description='Lenna - Tensorflow image classification framework',
     install_requires=req_list,
     author = 'CI&T'
 )
