@@ -7,6 +7,10 @@
 Welcome to lenna's documentation!
 ####################################################
 
+This beautiful piece of code was born to easy your convolution neural networks development with TensorFlow.
+
+Please, enjoy!
+
 .. toctree::
    :maxdepth: 2 
    :caption: Contents:
@@ -23,6 +27,9 @@ Welcome to lenna's documentation!
 .. todo::
 
     * Write input transformations using `TensorFlow Transform <https://github.com/tensorflow/transform>`_
+    * Integrate with `Travis-CI <https://travis-ci.org/>`_ to automatically build the docs once ReadTheDocs is not working.
+    * Publish on `PyPI <https://pypi.org/>`_
+    * Support **.csv** metadata
 
 Indices and tables
 ==================

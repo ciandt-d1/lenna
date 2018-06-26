@@ -112,6 +112,7 @@ dist
 *.pbtxt
 *.pb
 checkpoint
+*events*
 
 #sphinx docs
 docs/build/

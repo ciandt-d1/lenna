@@ -1,35 +1,39 @@
 #########################
-How to use the framework
+HOW-TO
 #########################
 
 
 .. note::
-	This framework is built upon **TensorFlow 1.8.0**
+	Lenna was built upon **TensorFlow 1.8.0**
 
 ***********
-Main files
+Core files
 ***********
 
-* **dataset.py** : Implements dataset manipulation using the `Dataset API <https://www.tensorflow.org/programmers_guide/datasets>`_
-* **estimator_specs.py** : Here it is defined the abstract class you should inherit from in order to create your own estimator.
-* **train_estimator.py** : The core of the framework. It contains the main training flow using `Estimator API <https://www.tensorflow.org/programmers_guide/estimators>`_ . It instanciates the model, input and hook functions for later usage during traning.
-* **utils.py** : It contains some utility functions to perform IO with Google Cloud Storage and tf-record manipulation
+* `dataset.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/dataset.py>`_ : Implements dataset manipulation using the `Dataset API <https://www.tensorflow.org/programmers_guide/datasets>`_
+* `estimator_specs.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/estimator_specs.py>`_ : Here it is defined the abstract class you should inherit from in order to create your own estimator.
+* `train_estimator.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/train_estimator.py>`_ : The core of the framework. It contains the main training flow using `Estimator API <https://www.tensorflow.org/programmers_guide/estimators>`_ . It instantiates the model and input functions for later usage during traning and evaluation.
+* `utils.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/utils.py>`_ : It contains some utility functions to perform I/O with Google Cloud Storage and tf-record manipulation
 
-***********
-How to use
-***********
+*************
+Installation
+*************
 
-We do recommend to use the framework as a pip package.
+It's recommended to use the framework as a pip package.
 So after downloading the code:
-
 
 .. code-block:: bash
 
-	cd /path/to/tf_image_classification
+	cd /path/to/lenna
 	python setup sdist
-	pip install ./dist/tf_image_classification.3.0.0.tar.gz --upgrade
+	pip install ./dist/lenna.tar.gz --upgrade
 
 Once installed, all you need to do is to create a class that inherit from :class:`~tf_image_classification.estimator_specs.EstimatorSpec` and implement its abstract methods.
+
+
+.. note::
+    
+    Don't worry. We'll publish lenna on `PyPI <https://pypi.org/>`_  as soon as possible.
 
 *************************
 Running locally - Example
@@ -37,41 +41,61 @@ Running locally - Example
 
 .. code-block:: bash
 
-	python myEstimator.py --batch_size 64 --train_steps 10000 \
-	--train_metadata tfrecords_path/train* --eval_metadata tfrecords_path/eval* \
-	--warm_start_ckpt checkpoint_path/pretrained_ckpt.ckpt --model_dir ./models \
-	--eval_freq 10 --eval_throttle_secs 30 --learning_rate 0.00001 
+	python myEstimator.py \
+            --batch_size 64 \
+            --train_steps 10000 \
+            --train_metadata tfrecords_path/train* \
+            --eval_metadata tfrecords_path/eval* \
+            --warm_start_ckpt /path/to/pretrained_ckpt.ckpt \
+            --model_dir /path/to/model.ckpt \
+            --eval_freq 10 \
+            --eval_throttle_secs 30 \
+            --learning_rate 0.00001 \
+            --batch_size 32
+
 
 *************************************
 Running on Google ML Engine - Example
 *************************************
 
 First, you must package your application as a pip package.
+Also, you must have a `Google Cloud Platform <https://cloud.google.com/>`_ account.
 
 .. code-block:: bash
 
-	gcloud ml-engine jobs submit training JOB_ID --job-dir=gs://bucket/stagging_folder/ \
-	--module-name myEstimatorPkg.myEstimator \
-	--packages myEstimator.tar.gz,tf_image_classification-3.0.0.tar.gz,slim-0.1.tar.gz \
-	--region us-east1 --config cloud.yml --  --batch_size 128 --train_steps 1000 \
-	--train_metadata gs://bucket/tfrecords/train* \ --eval_metadata gs://bucket/tfrecords/eval* \
-	--warm_start_ckpt gs://bucket/pretrained_checkpoints/pretrained_model.ckpt \
-	--model_dir gs://bucket/trained-checkpoints/ --eval_freq 10 \
-	--eval_throttle_secs 120 --learning_rate 0.00001
+	gcloud ml-engine jobs submit training JOB_ID \
+            --job-dir=gs://bucket/stagging_folder/ \
+            --module-name myEstimatorPkg.myEstimator \
+            --packages myEstimator.tar.gz,lenna.tar.gz \
+            --region us-east1 \
+            --config cloud.yml --  \
+            --batch_size 128 \
+            --train_steps 1000 \
+            --train_metadata gs://bucket/tfrecords/train* \
+            --eval_metadata gs://bucket/tfrecords/eval* \
+            --warm_start_ckpt gs://bucket/path/to/pretrained_model.ckpt \
+            --model_dir gs://bucket/path/to/model.ckpt \
+            --eval_freq 10 \
+            --eval_throttle_secs 120 \
+            --learning_rate 0.00001 \
+            --batch_size 32
 
 
 .. note::
 
-	:func:`~tf_image_classification.train_estimator.train` uses the method `train_and_evaluate <https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate>`_ that runs seamlessly both locally and distributed training, so you **don't need to write a single line of code** to run your model distributed into a ML Engine cluster.
+    * All flags are defined on :ref:`flags`.
+    * :func:`~tf_image_classification.train_estimator.train` uses the method `train_and_evaluate <https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate>`_ that runs seamlessly both locally and distributed training, so you **don't need to write a single line of code** to run your model distributed into a ML Engine cluster.
+    * For a full example of usage, please read our :ref:`mini-mnist-tutorial`.
 
+.. _flags:
 
 ******
 FLAGS
 ******
 
-The framework uses `TensorFlow Flags <https://www.tensorflow.org/api_docs/python/tf/flags>`_ as argument parser.
+Lenna uses `TensorFlow Flags <https://www.tensorflow.org/api_docs/python/tf/flags>`_ as argument parser.
 One advantage over python standard `ArgumentParser <https://docs.python.org/2/library/argparse.html>`_ is that the flags can be retrieved
-throughout any **.py** file.
+throughout any **.py** file within the project.
 In the context of the framework, the flags below are can be retrieved by your program.
 
 Example
@@ -79,6 +103,7 @@ Example
 
 .. code-block:: python
 
+    import tensorflow as tf
     FLAGS = tf.app.flags.FLAGS
     print(FLAGS.learning_rate)
 
@@ -89,15 +114,15 @@ Standard Flags
     * Default value: **None** 
 * `warm_start_ckpt` : Checkpoint to load pre-trained model
     * Default value: **None**
-* `train_metadata` : Path to train metadata ( **.csv** or **.tfrecord**)
+* `train_metadata` : Path to train metadata (**.tfrecord** Only!)
     * Default value: **None**
-* `eval_metadata` : Path to eval metadata ( **.csv** or **.tfrecord**)
+* `eval_metadata` : Path to eval metadata (**.tfrecord** Only!)
     * Default value: **None**
 * `batch_size` : Batch size
     * Default value: **1**
 * `train_steps` : Train steps
     * Default value: **20**
-* `image_size` : Image size for resize on preprocessing
+* `image_size` : Image size used for image preprocessing, if any.
     * Default value: **299**
 * `eval_freq` : How many eval batches to evaluate
     * Default value: **5**
@@ -109,7 +134,7 @@ Standard Flags
 Optimizer Flags
 ^^^^^^^^^^^^^^^
 
-* `weight_decay` : The weight decay on the model weights (_e.g._ batchnorm layers)
+* `weight_decay` : Weight decay for batch norm layers.
     * Defaut value: **0.00004**
 * `optimizer` : Name of optimizer
     * Default value: **rmsprop**
@@ -198,3 +223,6 @@ Checkpoint Flags
                             
 * `keep_checkpoint_max` : The maximum number of recent **ckpt** files to keep. -1 to keep all checkpoints
 	* Default Value: **5**
+
+* `export_saved_model` : Whether or not to export saved model
+	* Default Value: **True**

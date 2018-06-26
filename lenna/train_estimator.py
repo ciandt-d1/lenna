@@ -158,6 +158,9 @@ tf.app.flags.DEFINE_integer(name="save_checkpoints_secs", default=None,
                             help="Save checkpoints every this many seconds. Can not be specified with save_checkpoints_steps")
 tf.app.flags.DEFINE_integer(name="keep_checkpoint_max", default=5,
                             help="The maximum number of recent checkpoint files to keep. -1 to keep every checkpoints")
+tf.app.flags.DEFINE_bool(
+    'export_saved_model', True, 'Whether or not to export saved model')
+
 
 def train(estimator_specs):
     """Train your model defined by ``estimator_specs``.
@@ -178,7 +181,7 @@ def train(estimator_specs):
         Nothing is returned since the ``ckpt`` and ``summaries`` files are already saved during the training.
     """
 
-     # Check whether data is stored as TF-Records or csv
+    # Check whether data is stored as TF-Records or csv
     is_tfrecord = False
 
     if FLAGS.eval_metadata.endswith("csv") and FLAGS.train_metadata.endswith("csv"):
@@ -188,7 +191,7 @@ def train(estimator_specs):
     else:
         is_tfrecord = True
         train_metadata = utils.list_tfrecord(FLAGS.train_metadata)
-        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)       
+        eval_metadata = utils.list_tfrecord(FLAGS.eval_metadata)
 
         dataset_len = utils.get_dataset_len(train_metadata)
 
@@ -216,24 +219,24 @@ def train(estimator_specs):
 
     model_fn = estimator_specs.get_model_fn()
 
-    
     run_config = tf.estimator.RunConfig(
-        model_dir=output_dir,        
-        save_summary_steps= FLAGS.save_summary_steps,        
-        keep_checkpoint_max= None if (FLAGS.keep_checkpoint_max < 0) else FLAGS.keep_checkpoint_max
+        model_dir=output_dir,
+        save_summary_steps=FLAGS.save_summary_steps,
+        keep_checkpoint_max=None if (
+            FLAGS.keep_checkpoint_max < 0) else FLAGS.keep_checkpoint_max
     )
 
-    if FLAGS.save_checkpoints_steps is None and FLAGS.save_checkpoints_secs is None: 
+    if FLAGS.save_checkpoints_steps is None and FLAGS.save_checkpoints_secs is None:
         save_checkpoints_secs = 600
         save_checkpoints_steps = FLAGS.save_checkpoints_secs
-    elif FLAGS.save_checkpoints_steps is not None and FLAGS.save_checkpoints_secs is not None: 
+    elif FLAGS.save_checkpoints_steps is not None and FLAGS.save_checkpoints_secs is not None:
         raise('`save_checkpoints_steps` and `save_checkpoints_secs` cannot be both set.')
     else:
         save_checkpoints_secs = FLAGS.save_checkpoints_secs
         save_checkpoints_steps = FLAGS.save_checkpoints_steps
 
-
-    run_config = run_config.replace(save_checkpoints_steps=save_checkpoints_steps,save_checkpoints_secs=save_checkpoints_secs)
+    run_config = run_config.replace(
+        save_checkpoints_steps=save_checkpoints_steps, save_checkpoints_secs=save_checkpoints_secs)
 
     estimator = tf.estimator.Estimator(
         model_fn=model_fn,
@@ -243,21 +246,25 @@ def train(estimator_specs):
             ckpt_to_initialize_from=FLAGS.warm_start_ckpt, vars_to_warm_start=FLAGS.checkpoint_restore_scopes)
     )
 
-    preproc_fn_train = estimator_specs.get_preproc_fn(is_training=True)
-    preproc_fn_eval = estimator_specs.get_preproc_fn(is_training=False)
-
     train_input_fn = estimator_specs.input_fn(
-        batch_size=FLAGS.batch_size, metadata=train_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=epochs, image_size=FLAGS.image_size, preproc_fn=preproc_fn_train)
+        batch_size=FLAGS.batch_size, metadata=train_metadata, is_tfrecord=is_tfrecord, epochs=epochs)
     eval_input_fn = estimator_specs.input_fn(
-        batch_size=FLAGS.batch_size, metadata=eval_metadata, class_dict=estimator_specs.class_dict, is_tfrecord=is_tfrecord, epochs=1, image_size=FLAGS.image_size, preproc_fn=preproc_fn_eval)
+        batch_size=FLAGS.batch_size, metadata=eval_metadata, is_tfrecord=is_tfrecord, epochs=1)
 
     train_spec = tf.estimator.TrainSpec(
         input_fn=train_input_fn, max_steps=FLAGS.train_steps)
+    
     eval_spec = tf.estimator.EvalSpec(
-        input_fn=eval_input_fn, steps=FLAGS.eval_freq, throttle_secs=FLAGS.eval_throttle_secs)
+        input_fn=eval_input_fn,
+        steps=FLAGS.eval_freq,
+        throttle_secs=FLAGS.eval_throttle_secs)
 
     tf.estimator.train_and_evaluate(
         estimator=estimator, train_spec=train_spec, eval_spec=eval_spec)
+
+    if FLAGS.export_saved_model:
+        estimator.export_savedmodel(export_dir_base=output_dir,
+                                serving_input_receiver_fn=estimator_specs.get_serving_fn())
 
 
 def evaluate(estimator_specs):

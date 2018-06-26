@@ -32,7 +32,7 @@ class EstimatorSpec(object):
     `Take a read on it <https://www.kdnuggets.com/2016/07/multi-task-learning-tensorflow-part-1.html>`_
 
     **Example from MiniMNIST:**
-    
+
     >>> self.class_dict = [{'name': 'class_id',  'depth': 10, 'one-hot': True}]
 
     In this example we have just one label, called ``class_id`` . It **must** match with what you have saved on tf-records.
@@ -41,25 +41,27 @@ class EstimatorSpec(object):
     """
     __metaclass__ = abc.ABCMeta
 
+    def __init__(self):
 
-    def __init__(self):        
-        
         super(EstimatorSpec, self).__init__()
-        
+
         self.class_dict = []
+
+    def get_serving_fn(self):
+        return None
 
     def get_model_fn(self, *args):
         """Implement your model function here.
             It **must** return a function that builds your model as a `tf.estimator.EstimatorSpec <https://www.tensorflow.org/api_docs/python/tf/estimator/EstimatorSpec>`_
-            
+
             The model function **must** follow the signature (`features`, `labels`, `mode`, `params`) as shown on `Estimator Tutorial <https://www.tensorflow.org/get_started/custom_estimators#write_a_model_function>`_
-            
+
             It is here that your network architecture is defined, both for training, evaluation and inference.
-            
+
             * When on training mode ( mode == `tf.estimator.ModeKeys.TRAIN` ) it is expected the graph to be built up to the loss definition.
-            
+
             * When on evaluation mode ( mode == `tf.estimator.ModeKeys.EVAL` ) it is expected the graph to be built up to the metrics definition.
-            
+
             * When on inference mode ( mode == `tf.estimator.ModeKeys.PREDICT` ) it is expected the graph to be built up to the logits/predictions definition.
 
         Args:
@@ -70,7 +72,7 @@ class EstimatorSpec(object):
 
 
         **Example from MiniMNIST:**
-        
+
         >>> def get_model_fn(self):
         ...     
         ...     # Recall to follow the signature below
@@ -132,15 +134,15 @@ class EstimatorSpec(object):
 
     def metric_ops(self, labels, predictions):
         """ Implement here the metrics you want to collect
-        
+
         You **do** need to use the streaming metrics from `tf.metrics <https://www.tensorflow.org/api_docs/python/tf/metrics>`_ ,
         however it is also possible to create your own since it returns the tuple ( `metric_val` , `metric_update_op` ).
         See :func:`util.streaming_confusion_matrix` for an example
-         
-        
+
+
         Args:
             ``labels`` (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): tensor with the ground-truth labels for each example
-            
+
             ``prediction`` (`tf.Tensor <https://www.tensorflow.org/api_docs/python/tf/Tensor>`_): tensor with the prediction labels for each example
 
         Returns:
@@ -178,12 +180,12 @@ class EstimatorSpec(object):
         """ Implement here your preprocessing function.
 
         Create your preprocessing function. It is expected that the input tensor contains a RGB or BGR image.
-        
+
         Args:
             ``is_training`` (bool): Whether or not the preprocessing will be executed during training or not. This may be useful if you want to do online data augmentation
-            
+
             ``kargs`` (dict): any extra argument you want to pass to your preprocessing function
-        
+
         Returns:
             A function that preprocess input images
 
@@ -201,7 +203,8 @@ class EstimatorSpec(object):
         """
         pass
 
-    def input_fn(self, batch_size, metadata, class_dict, is_tfrecord, epochs, image_size, preproc_fn):
+    # def input_fn(self, batch_size, metadata, class_dict, is_tfrecord, epochs, image_size, preproc_fn):
+    def input_fn(self, batch_size, metadata, is_tfrecord, epochs):
         """Input function to provide data to estimator model
 
         Args:
@@ -227,7 +230,7 @@ class EstimatorSpec(object):
 
             This method is already implemented, but you may overwrite as you wish.
 
-        
+
         **Code**
 
         >>> def _input_fn():
@@ -252,12 +255,12 @@ class EstimatorSpec(object):
             with tf.name_scope('Data_Loader'):
                 if is_tfrecord:
                     batch = dataset.get_batch_loader_tfrecord(
-                        metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
-                        class_dict=class_dict)
+                        # metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,class_dict=self.class_dict)
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict)
                 else:
                     batch = dataset.get_batch_loader_csv(
-                        metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,
-                        class_dict=class_dict)
+                        # metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,class_dict=self.class_dict)
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict)
 
                 return batch
 

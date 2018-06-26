@@ -80,6 +80,14 @@ project = u'lenna'
 copyright = u'2018, CI&T'
 author = u'CI&T'
 
+html_context = {
+    "display_github": True, # Integrate GitHub
+    "github_user": "ciandt-d1", # Username
+    "github_repo": "lenna", # Repo name
+    "github_version": "master", # Version
+    "conf_py_path": "/docs/", # Path in the checkout to the docs root
+}
+
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
 # built documents.

@@ -1,0 +1,1 @@
+gcloud ml-engine predict --model mini_mnist_test --version mini_mnist_28 --json-instances ./dataset/sample_b64.json

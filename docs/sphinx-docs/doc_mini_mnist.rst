@@ -1,3 +1,5 @@
+.. _mini-mnist-tutorial:
+
 ####################
 Mini MNIST Tutorial
 ####################
@@ -140,7 +142,8 @@ Local
         --model_dir ./trained_models --eval_freq 6 \
         --eval_throttle_secs 15 -\
         -learning_rate 0.001 \
-        --image_size 299
+        --image_size 299 \
+        --labels ./labels.txt
 
 
 .. note::
@@ -181,7 +184,8 @@ However, you can also make references for these packages locally.
     --model_dir gs://mini_mnist/trained_models/${JOB_ID} \
     --eval_freq 6 --eval_throttle_secs 15 \
     --learning_rate 0.00001 \
-    --image_size 299
+    --image_size 299 \
+    --labels gs://mini_mnist/labels.txt
 
 
 **********************
@@ -300,6 +304,33 @@ Beautiful, isn't it?
         --output_cm_folder gs://mini_mnist/experiments/MINI_MNIST_TRAIN_ID/confusion_matrices \
         --labels gs://mini_mnist/metadata/labels.txt
 
+*******************************************
+Deploy model on ML Engine
+*******************************************
+
+Serve saved model on ML Engine
+===============================
+
+Read this simple `tutorial <https://cloud.google.com/ml-engine/docs/tensorflow/deploying-models#creating_a_model_version>`_ .
+
+.. note:: 
+
+    Choose the most recent runtime version. Up to this time, it is the **1.5**
+
+
+HOW TO RUN
+===========
+
+After your model is deployed just run
+
+.. code-block:: bash
+    
+    gcloud ml-engine predict --model <model-name> --version <version-name> --json-instances ./dataset/sample_b64.json
+
+
+*******************************************
+Post-process model to embed on application
+*******************************************
 
 Rename input and output tensors
 ================================
