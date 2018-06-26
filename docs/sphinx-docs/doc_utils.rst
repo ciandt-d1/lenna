@@ -6,59 +6,59 @@ Use them as you wish.
 
 split_storage_name
 ^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.split_storage_name
+.. autofunction:: lenna.utils.split_storage_name
 
 
 on_storage
 ^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.on_storage
+.. autofunction:: lenna.utils.on_storage
 
 
 download_blob
 ^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.download_blob
+.. autofunction:: lenna.utils.download_blob
 
 
 read_csv
 ^^^^^^^^
-.. autofunction:: tf_image_classification.utils.read_csv
+.. autofunction:: lenna.utils.read_csv
 
 
 list_tfrecord
 ^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.list_tfrecord
+.. autofunction:: lenna.utils.list_tfrecord
 
 
 get_dataset_len
 ^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.get_dataset_len
+.. autofunction:: lenna.utils.get_dataset_len
 
 
 configure_optimizer
 ^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.configure_optimizer
+.. autofunction:: lenna.utils.configure_optimizer
 
 
 configure_learning_rate
 ^^^^^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.configure_learning_rate
+.. autofunction:: lenna.utils.configure_learning_rate
 
 
 get_variables_to_train
 ^^^^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.get_variables_to_train
+.. autofunction:: lenna.utils.get_variables_to_train
 
 
 get_variables_to_restore
 ^^^^^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.get_variables_to_restore
+.. autofunction:: lenna.utils.get_variables_to_restore
 
 
 streaming_confusion_matrix
 ^^^^^^^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.streaming_confusion_matrix
+.. autofunction:: lenna.utils.streaming_confusion_matrix
 
 
 draw_confusion_matrix
 ^^^^^^^^^^^^^^^^^^^^^^
-.. autofunction:: tf_image_classification.utils.draw_confusion_matrix
+.. autofunction:: lenna.utils.draw_confusion_matrix

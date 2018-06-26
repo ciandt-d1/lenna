@@ -10,10 +10,10 @@ HOW-TO
 Core files
 ***********
 
-* `dataset.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/dataset.py>`_ : Implements dataset manipulation using the `Dataset API <https://www.tensorflow.org/programmers_guide/datasets>`_
-* `estimator_specs.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/estimator_specs.py>`_ : Here it is defined the abstract class you should inherit from in order to create your own estimator.
-* `train_estimator.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/train_estimator.py>`_ : The core of the framework. It contains the main training flow using `Estimator API <https://www.tensorflow.org/programmers_guide/estimators>`_ . It instantiates the model and input functions for later usage during traning and evaluation.
-* `utils.py <https://github.com/ciandt-d1/lenna/blob/master/tf_image_classification/utils.py>`_ : It contains some utility functions to perform I/O with Google Cloud Storage and tf-record manipulation
+* `dataset.py <https://github.com/ciandt-d1/lenna/blob/master/lenna/dataset.py>`_ : Implements dataset manipulation using the `Dataset API <https://www.tensorflow.org/programmers_guide/datasets>`_
+* `estimator_specs.py <https://github.com/ciandt-d1/lenna/blob/master/lenna/estimator_specs.py>`_ : Here it is defined the abstract class you should inherit from in order to create your own estimator.
+* `train_estimator.py <https://github.com/ciandt-d1/lenna/blob/master/lenna/train_estimator.py>`_ : The core of the framework. It contains the main training flow using `Estimator API <https://www.tensorflow.org/programmers_guide/estimators>`_ . It instantiates the model and input functions for later usage during traning and evaluation.
+* `utils.py <https://github.com/ciandt-d1/lenna/blob/master/lenna/utils.py>`_ : It contains some utility functions to perform I/O with Google Cloud Storage and tf-record manipulation
 
 *************
 Installation
@@ -28,7 +28,7 @@ So after downloading the code:
 	python setup sdist
 	pip install ./dist/lenna.tar.gz --upgrade
 
-Once installed, all you need to do is to create a class that inherit from :class:`~tf_image_classification.estimator_specs.EstimatorSpec` and implement its abstract methods.
+Once installed, all you need to do is to create a class that inherit from :class:`~lenna.estimator_specs.EstimatorSpec` and implement its abstract methods.
 
 
 .. note::
@@ -84,7 +84,7 @@ Also, you must have a `Google Cloud Platform <https://cloud.google.com/>`_ accou
 .. note::
 
     * All flags are defined on :ref:`flags`.
-    * :func:`~tf_image_classification.train_estimator.train` uses the method `train_and_evaluate <https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate>`_ that runs seamlessly both locally and distributed training, so you **don't need to write a single line of code** to run your model distributed into a ML Engine cluster.
+    * :func:`~lenna.train_estimator.train` uses the method `train_and_evaluate <https://www.tensorflow.org/api_docs/python/tf/estimator/train_and_evaluate>`_ that runs seamlessly both locally and distributed training, so you **don't need to write a single line of code** to run your model distributed into a ML Engine cluster.
     * For a full example of usage, please read our :ref:`mini-mnist-tutorial`.
 
 .. _flags:

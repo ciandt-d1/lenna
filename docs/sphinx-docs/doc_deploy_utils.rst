@@ -27,7 +27,7 @@ Example
 
 	python freeze_graph.py --model_dir /path/to/ckpt/ --output_tensors tensor_list --output_pb /path/to/model.pb
 
-.. autofunction:: tf_image_classification.deploy_utils.freeze_graph.freeze_graph
+.. autofunction:: lenna.deploy_utils.freeze_graph.freeze_graph
 
 
 Visualize graph
@@ -46,4 +46,4 @@ Example
 
 	python pb_viewer.py --input_graph_pb /path/to/model.pb --output_events_file /path/to/event_files
 
-.. autofunction:: tf_image_classification.deploy_utils.pb_viewer.generate_events
+.. autofunction:: lenna.deploy_utils.pb_viewer.generate_events

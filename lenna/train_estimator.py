@@ -170,12 +170,12 @@ def train(estimator_specs):
 
     * Read the dataset (from tf-records or csv) into `tf.data.Dataset <https://www.tensorflow.org/api_docs/python/tf/data/Dataset>`_
     * Check whether the job will be for hyperparameter tuning (ML Engine) or not
-    * Create estimator `tf.estimator.Estimator <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator>`_ from :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
+    * Create estimator `tf.estimator.Estimator <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator>`_ from :class:`~lenna.estimator_specs.EstimatorSpec`
     * Create input functions for both training and evaluation steps
     * Train and Evaluate `tf.estimator.train_and_evaluate <https://www.tensorflow.org/versions/master/api_docs/python/tf/estimator/train_and_evaluate>`_ .
 
     Args:
-        ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be trained
+        ``estimator_specs`` (:class:`~lenna.estimator_specs.EstimatorSpec`) : estimator to be trained
 
     Returns:
         Nothing is returned since the ``ckpt`` and ``summaries`` files are already saved during the training.
@@ -271,10 +271,10 @@ def evaluate(estimator_specs):
     """Evaluate your model defined by ``estimator_specs``
 
     Args:
-        ``estimator_specs`` (:class:`~tf_image_classification.estimator_specs.EstimatorSpec`) : estimator to be evaluated
+        ``estimator_specs`` (:class:`~lenna.estimator_specs.EstimatorSpec`) : estimator to be evaluated
 
     Returns:
-        ``metrics`` (dict): Dictionary of metrics defined on :func:`~tf_image_classification.estimator_specs.EstimatorSpec.metric_ops`
+        ``metrics`` (dict): Dictionary of metrics defined on :func:`~lenna.estimator_specs.EstimatorSpec.metric_ops`
     """
 
     is_tfrecord = False

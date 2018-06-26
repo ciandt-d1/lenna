@@ -4,7 +4,7 @@
 Mini MNIST Tutorial
 ####################
 
-This tutorial aims to provide a reference code using the tf_image_classification framework.
+This tutorial aims to provide a reference code using the lenna framework.
 The dataset used is a subset of the MNIST and it is versioned both images tf-records.
 This tutorial comprises:
 
@@ -113,12 +113,12 @@ Training Estimator
 *******************
 
 Take a look on **MiniMNIST** class on **train_mini_mnist.py**. 
-There it's implemented the following methods from :class:`~tf_image_classification.estimator_specs.EstimatorSpec`
+There it's implemented the following methods from :class:`~lenna.estimator_specs.EstimatorSpec`
 
-    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.get_preproc_fn`
-    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.get_model_fn`
-    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.metric_ops`
-    * :func:`~tf_image_classification.estimator_specs.EstimatorSpec.input_fn`: This isn't implemented by `MiniMNIST` once it's already implemented in the base class.
+    * :func:`~lenna.estimator_specs.EstimatorSpec.get_preproc_fn`
+    * :func:`~lenna.estimator_specs.EstimatorSpec.get_model_fn`
+    * :func:`~lenna.estimator_specs.EstimatorSpec.metric_ops`
+    * :func:`~lenna.estimator_specs.EstimatorSpec.input_fn`: This isn't implemented by `MiniMNIST` once it's already implemented in the base class.
 
 .. note::
  
@@ -162,11 +162,11 @@ You can do this by running the following command:
 
 
 You'll se that a directory **dist** is created and it contains your project package as a **tar.gz** file.
-As the code depends both of the _tf_image_classification framework and slim, their packages needed to be generated.
+As the code depends both of the _lenna framework and slim, their packages needed to be generated.
 In our case, they are already on GCS, so we won't need to package them, but just make a reference when submiting the job.
 However, you can also make references for these packages locally.
 
-    * `tf_image_classifier` : **gs://libs/tf_image_classification-3.0.0.tar.gz**
+    * `tf_image_classifier` : **gs://libs/lenna-3.0.0.tar.gz**
     * `slim` : **gs://libs/slim-0.1.tar.gz**
 
 .. code-block:: bash
@@ -175,7 +175,7 @@ However, you can also make references for these packages locally.
 
     gcloud ml-engine jobs submit training ${JOB_ID} \
     --job-dir=gs://mini_mnist/${JOB_ID} --module-name mini_mnist.train_mini_mnist \
-    --packages dist/mini_mnist-0.1.tar.gz,gs://libs/tf_image_classification-3.0.0.tar.gz,gs://libs/slim-0.1.tar.gz \
+    --packages dist/mini_mnist-0.1.tar.gz,gs://libs/lenna-3.0.0.tar.gz,gs://libs/slim-0.1.tar.gz \
     --region us-east1 --config ./cloud.yml --  \
     --batch_size 32 --train_steps 1000 \
     --train_metadata gs://mini_mnist/tf_records/train* \
@@ -206,7 +206,7 @@ Transfer Learning
     gcloud ml-engine jobs submit training ${JOB_ID_TRANSFER} \
         --job-dir=gs://mini_mnist/experiments/${JOB_ID_TRANSFER} \
         --module-name mini_mnist.train_mini_mnist \
-        --packages mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --packages mini_mnist-0.1.tar.gz,gs://bucket_name/lenna-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
         --region us-east1 --config ./cloud.yml --  \
         --batch_size 32 --train_steps 10000 \
         --train_metadata gs://mini_mnist/tf_records/train* \
@@ -230,7 +230,7 @@ Fine Tuning
     gcloud ml-engine jobs submit training ${JOB_ID_FINE} \
         --job-dir=gs://mini_mnist/experiments/${JOB_ID_FINE} \
         --module-name --module-name mini_mnist.train_mini_mnist \
-        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/lenna-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
         --region us-east1 --config ./cloud.yml -- \
         --batch_size 32 --train_steps 10000 \
         --train_metadata gs://mini_mnist/tf_records/train* \
@@ -254,7 +254,7 @@ If you don't want to use a pretrained network you can just ignore the `checkpoin
     gcloud ml-engine jobs submit training ${JOB_ID} \
         --job-dir=gs://mini_mnist/experiments/${JOB_ID} \
         --module-name mini_mnist.train_mini_mnist \
-        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/lenna-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
         --region us-east1 --config ./cloud.yml --  \
         --batch_size 32 --train_steps 10000 \
         --train_metadata gs://mini_mnist/tf_records/train* \
@@ -296,7 +296,7 @@ Beautiful, isn't it?
     gcloud ml-engine jobs submit training ${JOB_ID_EVAL} \
         --job-dir=gs://mini_mnist/experiments/${JOB_ID_EVAL} \
         --module-name mini_mnist.train_mini_mnist \
-        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/tf_image_classification-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
+        --packages dist/mini_mnist-0.1.tar.gz,gs://bucket_name/lenna-3.0.0.tar.gz,gs://bucket_name/slim-0.1.tar.gz \
         --region us-east1 --config ./cloud_eval.yml --  \
         --batch_size 32 --eval_metadata gs://mini_mnist/tf_records/eval* \
         --image_size 32 --evaluate \
