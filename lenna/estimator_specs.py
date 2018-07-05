@@ -204,7 +204,7 @@ class EstimatorSpec(object):
         pass
 
     # def input_fn(self, batch_size, metadata, class_dict, is_tfrecord, epochs, image_size, preproc_fn):
-    def input_fn(self, batch_size, metadata, is_tfrecord, epochs):
+    def input_fn(self, batch_size, metadata, is_tfrecord, epochs, batch_prefech):
         """Input function to provide data to estimator model
 
         Args:
@@ -256,11 +256,11 @@ class EstimatorSpec(object):
                 if is_tfrecord:
                     batch = dataset.get_batch_loader_tfrecord(
                         # metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,class_dict=self.class_dict)
-                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict)
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict, batch_prefech=batch_prefech)
                 else:
                     batch = dataset.get_batch_loader_csv(
                         # metadata=metadata, batch_size=batch_size, epochs=epochs, image_size=image_size, preproc_fn=preproc_fn,class_dict=self.class_dict)
-                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict)
+                        metadata=metadata, batch_size=batch_size, epochs=epochs, class_dict=self.class_dict, batch_prefech=batch_prefech)
 
                 return batch
 

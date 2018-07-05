@@ -1,5 +1,5 @@
 
-__version__ = '3.0.1'
+__version__ = '3.1.1'
 
 import estimator_specs
 import dataset
